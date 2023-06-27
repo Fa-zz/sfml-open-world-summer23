@@ -1,4 +1,4 @@
-SRC_DIR = src/open-world-game
+SRC_DIR = src/slender-game
 BUILD_DIR = build/debug
 CC = g++
 SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
