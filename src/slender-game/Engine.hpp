@@ -10,9 +10,17 @@
 
 class Engine {
 private:
-    // Variables
+    // Game area variables
+    sf::Vector2f gameAreaSize;
+    sf::FloatRect* gameAreaBoundsPtr;
+    // Player movement vars
+    float playerMoveSpeed;
+    sf::Vector2f playerMovement;
+    sf::Vector2f playerNewPosition;
+    // Player midpoint vars
+    sf::Vector2f circlePosition;
 
-    // Window view
+    // Window, view
     sf::RenderWindow* window;
     sf::View mainView;
     // float viewSpeed;
@@ -22,12 +30,13 @@ private:
     candle::LightingArea* fogPtr;
 
     // Player, objects
-    sf::RectangleShape player;
+    sf::CircleShape player;
     sf::RectangleShape object;
     sf::RectangleShape UIElem;
 
     // Private functions
     void initWindow();
+    void initVars();
     void initLight();
     void initPlayer();
     void initObjects();

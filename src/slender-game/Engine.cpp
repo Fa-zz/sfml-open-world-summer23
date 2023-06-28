@@ -7,6 +7,13 @@ void Engine::initWindow() {
     window->setVerticalSyncEnabled(false);
 }
 
+void Engine::initVars() {
+    gameAreaSize = sf::Vector2f(15000.f, 15000.f);
+    gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
+    playerMoveSpeed = 5.f;
+    playerNewPosition = sf::Vector2f(0,0);
+}
+
 void Engine::initLight() {
     // create a light source
     lightPtr = new candle::RadialLight();
@@ -14,13 +21,15 @@ void Engine::initLight() {
     lightPtr->setRange(300);
     lightPtr->setFade(false);
 
-    fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(0.f,0.f), sf::Vector2f(1500.f,1500.f));
+    fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(0.f,0.f), gameAreaSize);
+    std::cout << "Fog ptr global bounds: " << fogPtr->getGlobalBounds().height << " " << fogPtr->getGlobalBounds().width << std::endl;
     fogPtr->setAreaColor(sf::Color::Black);
 
 }
 
 void Engine::initPlayer() {
-    player.setSize(sf::Vector2f(25.f, 25.f));
+    player.setRadius(25.f);
+    player.setFillColor(sf::Color::Yellow);
     player.setPosition(500.f,500.f);
 }
 
@@ -40,6 +49,7 @@ void Engine::initView() {
 // CONSTRUCTOR, DESTRUCTOR
 Engine::Engine() {
     initWindow();
+    initVars();
     initLight();
     initObjects();
     initView();
@@ -49,6 +59,7 @@ Engine::~Engine() {
     delete window;
     delete lightPtr;
     delete fogPtr;
+    delete gameAreaBoundsPtr;
 }
 
 // RUN, UPDATE, POLL EVENTS FUNCTIONS
@@ -75,31 +86,47 @@ void Engine::pollEvents() {
 }
 
 void Engine::updatePlayer() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        player.move(-4.0f, 0.f);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        player.move(4.0f, 0.f);
-    }
+    playerMovement = sf::Vector2f(0,0);
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        player.move(0.f, -4.0f);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        player.move(0.f, 4.0f);
-    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        playerMovement.y -= playerMoveSpeed;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        playerMovement.y += playerMoveSpeed;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        playerMovement.x -= playerMoveSpeed;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        playerMovement.x += playerMoveSpeed;
 
+    playerNewPosition = player.getPosition() + playerMovement;
+    if (gameAreaBoundsPtr->contains(playerNewPosition))
+        player.setPosition(playerNewPosition);
+        else {
+            std::cout << "ADJUSTING PLAYER POS, EXCEEDING BOUNDS" << std::endl;
+            // Adjust player position if it exceeds the game area bounds
+            if (playerNewPosition.x < gameAreaBoundsPtr->left)
+                playerNewPosition.x = gameAreaBoundsPtr->left;
+            else if (playerNewPosition.x > gameAreaBoundsPtr->left + gameAreaBoundsPtr->width)
+                playerNewPosition.x = gameAreaBoundsPtr->left + gameAreaBoundsPtr->width;
+
+            if (playerNewPosition.y < gameAreaBoundsPtr->top)
+                playerNewPosition.y = gameAreaBoundsPtr->top;
+            else if (playerNewPosition.y > gameAreaBoundsPtr->top + gameAreaBoundsPtr->height)
+                playerNewPosition.y = gameAreaBoundsPtr->top + gameAreaBoundsPtr->height;
+
+            player.setPosition(playerNewPosition);
+        }
 }
 
 void Engine::update() {
     pollEvents();
     updatePlayer();
 
-    // Calculate midpoint of player, then set lightPtr equal to
-    sf::Vector2f rectanglePosition = player.getPosition();
-    sf::Vector2f rectangleSize = player.getSize();
-    sf::Vector2f playerMidpoint(rectanglePosition.x + rectangleSize.x / 2.f,
-                            rectanglePosition.y + rectangleSize.y / 2.f);
+    // Calculate the midpoint of the circle, then set lightPtr equal to
+    circlePosition = player.getPosition();
+    float circleRadius = player.getRadius();
+    sf::Vector2f playerMidpoint(circlePosition.x + circleRadius, circlePosition.y + circleRadius);
 
-    lightPtr->setPosition(playerMidpoint - sf::Vector2f(5.f, 5.f));
+    lightPtr->setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
 }
 
 // RENDER FUNCTIONS
