@@ -2,13 +2,25 @@
 
 // PRIVATE FUNCTIONS, INIT FUNCTIONS
 void Engine::initWindow() {
-    window = new sf::RenderWindow(sf::VideoMode(1920,1080), "View, Light, OOP", sf::Style::Default | sf::Style::Close);
+    window = new sf::RenderWindow(sf::VideoMode(1920,1080), "Night In a Forest", sf::Style::Default | sf::Style::Close);
     window->setFramerateLimit(144);
     window->setVerticalSyncEnabled(false);
 }
 
+void Engine::initLight() {
+    // create a light source
+    lightPtr = new candle::RadialLight();
+    lightPtr->setBeamAngle(90);
+    lightPtr->setRange(300);
+    lightPtr->setFade(false);
+
+    fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(0.f,0.f), sf::Vector2f(1500.f,1500.f));
+    fogPtr->setAreaColor(sf::Color::Black);
+
+}
+
 void Engine::initPlayer() {
-    player.setSize(sf::Vector2f(50.f, 50.f));
+    player.setSize(sf::Vector2f(25.f, 25.f));
     player.setPosition(500.f,500.f);
 }
 
@@ -28,12 +40,15 @@ void Engine::initView() {
 // CONSTRUCTOR, DESTRUCTOR
 Engine::Engine() {
     initWindow();
+    initLight();
     initObjects();
     initView();
 }
 
 Engine::~Engine() {
     delete window;
+    delete lightPtr;
+    delete fogPtr;
 }
 
 // RUN, UPDATE, POLL EVENTS FUNCTIONS
@@ -77,28 +92,33 @@ void Engine::updatePlayer() {
 void Engine::update() {
     pollEvents();
     updatePlayer();
+
+    // Calculate midpoint of player, then set lightPtr equal to
+    sf::Vector2f rectanglePosition = player.getPosition();
+    sf::Vector2f rectangleSize = player.getSize();
+    sf::Vector2f playerMidpoint(rectanglePosition.x + rectangleSize.x / 2.f,
+                            rectanglePosition.y + rectangleSize.y / 2.f);
+
+    lightPtr->setPosition(playerMidpoint - sf::Vector2f(5.f, 5.f));
 }
 
 // RENDER FUNCTIONS
 void Engine::render() {
     mainView.setCenter(player.getPosition());
-
     // Draw
 
     // Draw light, fog
-    // fog.clear();
-    // fog.draw(light);
-    // fog.display();
-    // sf::Color myColor(74,103,65);
-    // window.clear(myColor);
-    window->clear();
+    fogPtr->clear();
+    fogPtr->draw(*lightPtr);
+    fogPtr->display();
 
+    sf::Color myColor(74,103,65);
+    window->clear(myColor);
 
     window->setView(mainView);
-    // window.draw(background);
     window->draw(object);
 
-    // window.draw(fog);
+    window->draw(*fogPtr);
     window->draw(player);
 
     // Draw UI

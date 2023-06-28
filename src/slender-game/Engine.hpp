@@ -1,5 +1,11 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
 
+#include "Candle/RadialLight.hpp"
+#include "Candle/LightingArea.hpp"
+
+#include <vector>
 #include <iostream>
 
 class Engine {
@@ -9,17 +15,22 @@ private:
     // Window view
     sf::RenderWindow* window;
     sf::View mainView;
-    float viewSpeed;
+    // float viewSpeed;
 
-    // Player, elems
+    // Light
+    candle::RadialLight* lightPtr;
+    candle::LightingArea* fogPtr;
+
+    // Player, objects
     sf::RectangleShape player;
     sf::RectangleShape object;
     sf::RectangleShape UIElem;
 
     // Private functions
     void initWindow();
-    void initObjects();
+    void initLight();
     void initPlayer();
+    void initObjects();
     void initView();
 
 public:
