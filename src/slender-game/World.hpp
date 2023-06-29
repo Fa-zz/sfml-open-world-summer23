@@ -18,7 +18,6 @@ private:
     void generateTrees();
 public:
     // Variables
-    std::vector<sf::CircleShape> treeVector;
     sf::Vector2f m_gameAreaSize;
 
     // Helper functions
@@ -26,7 +25,10 @@ public:
     int randomInt(int a, int b);
     float randomFloat(int a, int b);
     bool checkIntersection(const sf::Shape& shape1, const sf::Shape& shape2);
-    
+
+    // Objects
+    std::vector<sf::CircleShape> treeVector;
+
     // Constructor / destructor
     World(sf::Vector2f gameAreaSize, int numTrees, int numRocks);
     virtual ~World();

@@ -19,9 +19,10 @@ void Engine::initLight() {
     lightPtr = new candle::RadialLight();
     lightPtr->setBeamAngle(90);
     lightPtr->setRange(500);
-    lightPtr->setFade(true);
+    lightPtr->setFade(false);
 
-    fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(0.f,0.f), gameAreaSize);
+    float fogRenderOffset = 1000.f;
+    fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-fogRenderOffset,-fogRenderOffset), sf::Vector2f(gameAreaSize.x+(fogRenderOffset*2), gameAreaSize.y+(fogRenderOffset*2)));
     std::cout << "Fog ptr global bounds: " << fogPtr->getGlobalBounds().height << " " << fogPtr->getGlobalBounds().width << std::endl;
     fogPtr->setAreaColor(sf::Color::Black);
 
@@ -143,8 +144,9 @@ void Engine::render() {
     fogPtr->draw(*lightPtr);
     fogPtr->display();
 
-    sf::Color myColor(74,103,65);
-    window->clear(myColor);
+    sf::Color groundColor(74,103,65);
+
+    window->clear(groundColor);
 
     window->setView(mainView);
     for (auto iter = 0; iter < gameWorldPtr->treeVector.size(); ++iter) {
