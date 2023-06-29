@@ -10,12 +10,18 @@ private:
     // Game area variables
     sf::Vector2f gameAreaSize;
     sf::FloatRect* gameAreaBoundsPtr;
+
     // Player movement vars
     float playerMoveSpeed;
     sf::Vector2f playerMovement;
     sf::Vector2f playerNewPosition;
+
     // Player midpoint vars
     sf::Vector2f circlePosition;
+
+    // Player collision vars
+    sf::FloatRect playerNewBounds;
+    sf::FloatRect collidingWith;
 
     // Window, view
     sf::RenderWindow* window;
@@ -27,8 +33,9 @@ private:
     candle::LightingArea* fogPtr;
 
     // Player, objects
+    // sf::CircleShape newPlayer;
     sf::CircleShape player;
-    sf::RectangleShape object;
+    // sf::RectangleShape object;
     sf::RectangleShape UIElem;
 
     // World
@@ -50,6 +57,9 @@ public:
     void run();
 
     void pollEvents();
+    void playerOutOfBoundsAdjust();
+    bool playerObjectCollision(sf::CircleShape& playerArg);
+    void playerObjectCollisionAdjust();
     void updatePlayer();
 
     void update();

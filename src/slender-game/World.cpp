@@ -33,13 +33,18 @@ void World::generateTrees() {
         float y = randomFloat(0+150.f, m_gameAreaSize.y-150.f);
         std::cout << "Tree vector size: " << treeVector.size() << " Tree x: " << x << " Tree y: " << y << std::endl;
 
-        //TODO: Move all colors elsewhere.
+        //TODO: Move all colors to separate file.
+        //TODO: Randomize colors.
         sf::Color treeBarkColor(37,21,11);
         sf::Color leafColor(58,95,11);
 
-        sf::CircleShape circle(150.f);
+        //TODO: organize random generation more cleanly (all random values top of loop)
+        float treeRadius = randomFloat(70.f, 110.f);
+        int treeOutlineThickness = randomInt(20, 60);
+
+        sf::CircleShape circle(treeRadius);
         circle.setFillColor(treeBarkColor);
-        circle.setOutlineThickness(20);
+        circle.setOutlineThickness(treeOutlineThickness);
         circle.setOutlineColor(leafColor);
         circle.setPosition(x, y);
 

@@ -10,7 +10,7 @@ void Engine::initWindow() {
 void Engine::initVars() {
     gameAreaSize = sf::Vector2f(10000.f, 10000.f);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
-    playerMoveSpeed = 5.f;
+    playerMoveSpeed = 2.5f;
     playerNewPosition = sf::Vector2f(0,0);
 }
 
@@ -21,6 +21,7 @@ void Engine::initLight() {
     lightPtr->setRange(500);
     lightPtr->setFade(false);
 
+    //TODO: This value should not hardcoded!
     float fogRenderOffset = 1000.f;
     fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-fogRenderOffset,-fogRenderOffset), sf::Vector2f(gameAreaSize.x+(fogRenderOffset*2), gameAreaSize.y+(fogRenderOffset*2)));
     std::cout << "Fog ptr global bounds: " << fogPtr->getGlobalBounds().height << " " << fogPtr->getGlobalBounds().width << std::endl;
@@ -40,7 +41,7 @@ void Engine::initObjects() {
     // object.setSize(sf::Vector2f(100.f,100.f));
     // object.setPosition(800.f,800.f);
 
-    gameWorldPtr = new World(gameAreaSize, 200, 100);
+    gameWorldPtr = new World(gameAreaSize, 300, 100);
 
     UIElem.setSize(sf::Vector2f(300.f,50.f));
 }
@@ -89,37 +90,105 @@ void Engine::pollEvents() {
     }
 }
 
+void Engine::playerOutOfBoundsAdjust() {
+    std::cout << "ADJUSTING PLAYER POS, EXCEEDING BOUNDS" << std::endl;
+    // Adjust player position if it exceeds the game area bounds
+    if (playerNewPosition.x < gameAreaBoundsPtr->left)
+        playerNewPosition.x = gameAreaBoundsPtr->left;
+    else if (playerNewPosition.x > gameAreaBoundsPtr->left + gameAreaBoundsPtr->width)
+        playerNewPosition.x = gameAreaBoundsPtr->left + gameAreaBoundsPtr->width;
+
+    if (playerNewPosition.y < gameAreaBoundsPtr->top)
+        playerNewPosition.y = gameAreaBoundsPtr->top;
+    else if (playerNewPosition.y > gameAreaBoundsPtr->top + gameAreaBoundsPtr->height)
+        playerNewPosition.y = gameAreaBoundsPtr->top + gameAreaBoundsPtr->height;
+}
+
+bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
+    float GAP_THRESHOLD = 10.f;
+    sf::FloatRect playerBounds = playerArg.getGlobalBounds();
+    
+    for (auto iter = 0; iter < gameWorldPtr->treeVector.size(); ++iter) {
+        sf::FloatRect circleBounds = gameWorldPtr->treeVector[iter].getGlobalBounds();
+        
+        // Calculate the distance between the centers of player and circle
+        sf::Vector2f playerCenter = playerArg.getPosition() + sf::Vector2f(playerArg.getRadius(), playerArg.getRadius());
+        sf::Vector2f circleCenter = gameWorldPtr->treeVector[iter].getPosition() + sf::Vector2f(gameWorldPtr->treeVector[iter].getRadius(), gameWorldPtr->treeVector[iter].getRadius());
+        
+        float distance = std::sqrt(std::pow(playerCenter.x - circleCenter.x, 2) + std::pow(playerCenter.y - circleCenter.y, 2));
+
+        // Check for collision only if the player is close enough to the circle
+        // Adjust the threshold value according to your requirements
+        if (distance <= playerArg.getRadius() + gameWorldPtr->treeVector[iter].getRadius() + GAP_THRESHOLD) {
+            if (playerBounds.intersects(circleBounds)) {
+                return true;  // Collision detected
+            }
+        }
+    }    
+
+    return false;
+}
+
+void Engine::playerObjectCollisionAdjust() {
+    // Adjust player position if it collides with another object
+    if (playerNewPosition.x < collidingWith.left)
+        playerNewPosition.x = collidingWith.left;
+    else if (playerNewPosition.x > collidingWith.left + collidingWith.width)
+        playerNewPosition.x = collidingWith.left + collidingWith.width;
+
+    if (playerNewPosition.y < collidingWith.top)
+        playerNewPosition.y = collidingWith.top;
+    else if (playerNewPosition.y > collidingWith.top + collidingWith.height)
+        playerNewPosition.y = collidingWith.top + collidingWith.height;
+}
+
 void Engine::updatePlayer() {
-    std::cout << "PLAYER POS: " << player.getPosition().x << " " << player.getPosition().y << std::endl;
+    sf::Vector2f playerBeforePos = player.getPosition();
+    // std::cout << "PLAYER POS: " << player.getPosition().x << " " << player.getPosition().y << std::endl;
     playerMovement = sf::Vector2f(0,0);
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         playerMovement.y -= playerMoveSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+    } 
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
         playerMovement.y += playerMoveSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         playerMovement.x -= playerMoveSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
         playerMovement.x += playerMoveSpeed;
+    }
 
+    std::cout << "PLAYER MOVEMENT: " << playerMovement.x << " " << playerMovement.y << std::endl;
+
+    // Checking if player collides with gameArea or other objects
     playerNewPosition = player.getPosition() + playerMovement;
-    if (gameAreaBoundsPtr->contains(playerNewPosition))
-        player.setPosition(playerNewPosition);
-        else {
-            std::cout << "ADJUSTING PLAYER POS, EXCEEDING BOUNDS" << std::endl;
-            // Adjust player position if it exceeds the game area bounds
-            if (playerNewPosition.x < gameAreaBoundsPtr->left)
-                playerNewPosition.x = gameAreaBoundsPtr->left;
-            else if (playerNewPosition.x > gameAreaBoundsPtr->left + gameAreaBoundsPtr->width)
-                playerNewPosition.x = gameAreaBoundsPtr->left + gameAreaBoundsPtr->width;
+    sf::CircleShape newPlayer = player;
+    newPlayer.setPosition(playerNewPosition);
 
-            if (playerNewPosition.y < gameAreaBoundsPtr->top)
-                playerNewPosition.y = gameAreaBoundsPtr->top;
-            else if (playerNewPosition.y > gameAreaBoundsPtr->top + gameAreaBoundsPtr->height)
-                playerNewPosition.y = gameAreaBoundsPtr->top + gameAreaBoundsPtr->height;
+    if (!playerObjectCollision(newPlayer)) {
+        player.setPosition(playerNewPosition);  // Update the player's position
+    }
 
-            player.setPosition(playerNewPosition);
-        }
+    // if (gameAreaBoundsPtr->contains(playerNewPosition) && !(playerObjectCollision()))
+    //     player.setPosition(playerNewPosition);
+    // else {
+    //     if (!(gameAreaBoundsPtr->contains(playerNewPosition))) {
+    //         playerOutOfBoundsAdjust();
+    //     }
+    //     if (playerObjectCollision())
+    //         playerObjectCollisionAdjust();
+    //}
+
+    // Checking collision between objects and player
+    std::cout << "Player object collision func: " << playerObjectCollision(newPlayer) << std::endl;
+    // if (!playerObjectCollision()) {
+    //     player.setPosition(playerNewPosition);  // Update the player's position
+    // }
 }
 
 void Engine::update() {
@@ -150,8 +219,8 @@ void Engine::render() {
 
     window->setView(mainView);
     for (auto iter = 0; iter < gameWorldPtr->treeVector.size(); ++iter) {
-            window->draw(gameWorldPtr->treeVector[iter]);
-        }
+        window->draw(gameWorldPtr->treeVector[iter]);
+    }
     // window->draw(object);
 
     window->draw(*fogPtr);
