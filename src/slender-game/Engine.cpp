@@ -29,19 +29,28 @@ void Engine::initLight() {
 
 }
 
+void Engine::generatePlayerPosition() {
+    float x = gameWorldPtr->randomFloat(0.f, gameAreaSize.x);
+    float y = gameWorldPtr->randomFloat(0.f, gameAreaSize.y);
+    sf::Vector2f playerCoords = sf::Vector2f(x, y);
+    player.setPosition(playerCoords);
+    std::cout << "PLAYER COORDS SET AND GENERATED: " << playerCoords.x << " " << playerCoords.y << std::endl;
+}
+
 void Engine::initPlayer() {
     player.setRadius(25.f);
     player.setFillColor(sf::Color::Yellow);
-    player.setPosition(500.f,500.f);
+
+    generatePlayerPosition();
+    while (playerObjectCollision(player)) {
+        generatePlayerPosition();
+    }
 }
 
 void Engine::initObjects() {
-    initPlayer();
-
-    // object.setSize(sf::Vector2f(100.f,100.f));
-    // object.setPosition(800.f,800.f);
-
     gameWorldPtr = new World(gameAreaSize, 300, 100);
+
+    initPlayer();
 
     UIElem.setSize(sf::Vector2f(300.f,50.f));
 }
@@ -129,19 +138,6 @@ bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
     return false;
 }
 
-void Engine::playerObjectCollisionAdjust() {
-    // Adjust player position if it collides with another object
-    if (playerNewPosition.x < collidingWith.left)
-        playerNewPosition.x = collidingWith.left;
-    else if (playerNewPosition.x > collidingWith.left + collidingWith.width)
-        playerNewPosition.x = collidingWith.left + collidingWith.width;
-
-    if (playerNewPosition.y < collidingWith.top)
-        playerNewPosition.y = collidingWith.top;
-    else if (playerNewPosition.y > collidingWith.top + collidingWith.height)
-        playerNewPosition.y = collidingWith.top + collidingWith.height;
-}
-
 void Engine::updatePlayer() {
     sf::Vector2f playerBeforePos = player.getPosition();
     // std::cout << "PLAYER POS: " << player.getPosition().x << " " << player.getPosition().y << std::endl;
@@ -170,8 +166,13 @@ void Engine::updatePlayer() {
     sf::CircleShape newPlayer = player;
     newPlayer.setPosition(playerNewPosition);
 
-    if (!playerObjectCollision(newPlayer)) {
+    if (gameAreaBoundsPtr->contains(playerNewPosition) && !playerObjectCollision(newPlayer)) {
         player.setPosition(playerNewPosition);  // Update the player's position
+    } else {
+        if (!(gameAreaBoundsPtr->contains(playerNewPosition))) {
+            playerOutOfBoundsAdjust();
+        }
+
     }
 
     // if (gameAreaBoundsPtr->contains(playerNewPosition) && !(playerObjectCollision()))

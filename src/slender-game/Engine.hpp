@@ -45,6 +45,7 @@ private:
     void initWindow();
     void initVars();
     void initLight();
+    void generatePlayerPosition();
     void initPlayer();
     void initObjects();
     void initView();
@@ -59,7 +60,6 @@ public:
     void pollEvents();
     void playerOutOfBoundsAdjust();
     bool playerObjectCollision(sf::CircleShape& playerArg);
-    void playerObjectCollisionAdjust();
     void updatePlayer();
 
     void update();
