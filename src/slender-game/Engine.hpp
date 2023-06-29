@@ -63,5 +63,6 @@ public:
     void updatePlayer();
 
     void update();
+    void renderObjects(sf::RenderTarget& target);
     void render();
 };

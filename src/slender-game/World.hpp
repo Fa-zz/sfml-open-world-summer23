@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "CustomColors.hpp"
+#include "Data.hpp"
 
 class World {
 private:
     int m_numTrees, m_numRocks;
 
     void generateTrees();
+    void generateRocks();
 public:
     // Variables
     sf::Vector2f m_gameAreaSize;
@@ -25,10 +27,15 @@ public:
     bool checkIntersection(const sf::Shape& shape1, const sf::Shape& shape2);
 
     // Objects
-    std::vector<sf::CircleShape> treeVector;
+    std::vector<sf::CircleShape> treesVector;
+    std::vector<sf::RectangleShape> rocksVector;
 
     // Constructor / destructor
     World(sf::Vector2f gameAreaSize, int numTrees, int numRocks);
     virtual ~World();
+
+    // Render functions
+    void render(sf::RenderTarget& target);
+
 
 };

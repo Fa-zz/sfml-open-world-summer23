@@ -2,31 +2,28 @@
 
 // PRIVATE FUNCTIONS, INIT FUNCTIONS
 void Engine::initWindow() {
-    window = new sf::RenderWindow(sf::VideoMode(1920,1080), "Forest of Clues", sf::Style::Default | sf::Style::Close);
-    window->setFramerateLimit(144);
+    window = new sf::RenderWindow(sf::VideoMode(Data::videoModeWidth,Data::videoModeHeight), "Forest of Clues", sf::Style::Default | sf::Style::Close);
+    window->setFramerateLimit(Data::frameRateLimit);
     window->setVerticalSyncEnabled(false);
 }
 
 void Engine::initVars() {
-    gameAreaSize = sf::Vector2f(10000.f, 10000.f);
+    gameAreaSize = sf::Vector2f(Data::gameWorldSizeX, Data::gameWorldSizeY);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
-    playerMoveSpeed = 2.5f;
+    playerMoveSpeed = Data::playerMoveSpeedWalk;
     playerNewPosition = sf::Vector2f(0,0);
 }
 
 void Engine::initLight() {
     // create a light source
     lightPtr = new candle::RadialLight();
-    lightPtr->setBeamAngle(90);
-    lightPtr->setRange(500);
+    lightPtr->setRange(Data::lightRange1);
     lightPtr->setFade(false);
 
-    //TODO: This value should not hardcoded!
-    float fogRenderOffset = 1000.f;
+    float fogRenderOffset = gameAreaSize.x / 10;
     fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-fogRenderOffset,-fogRenderOffset), sf::Vector2f(gameAreaSize.x+(fogRenderOffset*2), gameAreaSize.y+(fogRenderOffset*2)));
     std::cout << "Fog ptr global bounds: " << fogPtr->getGlobalBounds().height << " " << fogPtr->getGlobalBounds().width << std::endl;
     fogPtr->setAreaColor(sf::Color::Black);
-
 }
 
 void Engine::generatePlayerPosition() {
@@ -38,7 +35,7 @@ void Engine::generatePlayerPosition() {
 }
 
 void Engine::initPlayer() {
-    player.setRadius(25.f);
+    player.setRadius(Data::playerRadiusDefault);
     player.setFillColor(CustomColors::skinTone);
 
     generatePlayerPosition();
@@ -48,7 +45,7 @@ void Engine::initPlayer() {
 }
 
 void Engine::initObjects() {
-    gameWorldPtr = new World(gameAreaSize, 400, 100);
+    gameWorldPtr = new World(gameAreaSize, Data::numTrees, Data::numRocks);
 
     initPlayer();
 
@@ -117,18 +114,18 @@ bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
     float GAP_THRESHOLD = 10.f;
     sf::FloatRect playerBounds = playerArg.getGlobalBounds();
     
-    for (auto iter = 0; iter < gameWorldPtr->treeVector.size(); ++iter) {
-        sf::FloatRect circleBounds = gameWorldPtr->treeVector[iter].getGlobalBounds();
+    for (auto iter = 0; iter < gameWorldPtr->treesVector.size(); ++iter) {
+        sf::FloatRect circleBounds = gameWorldPtr->treesVector[iter].getGlobalBounds();
         
         // Calculate the distance between the centers of player and circle
         sf::Vector2f playerCenter = playerArg.getPosition() + sf::Vector2f(playerArg.getRadius(), playerArg.getRadius());
-        sf::Vector2f circleCenter = gameWorldPtr->treeVector[iter].getPosition() + sf::Vector2f(gameWorldPtr->treeVector[iter].getRadius(), gameWorldPtr->treeVector[iter].getRadius());
+        sf::Vector2f circleCenter = gameWorldPtr->treesVector[iter].getPosition() + sf::Vector2f(gameWorldPtr->treesVector[iter].getRadius(), gameWorldPtr->treesVector[iter].getRadius());
         
         float distance = std::sqrt(std::pow(playerCenter.x - circleCenter.x, 2) + std::pow(playerCenter.y - circleCenter.y, 2));
 
         // Check for collision only if the player is close enough to the circle
         // Adjust the threshold value according to your requirements
-        if (distance <= playerArg.getRadius() + gameWorldPtr->treeVector[iter].getRadius() + GAP_THRESHOLD) {
+        if (distance <= playerArg.getRadius() + gameWorldPtr->treesVector[iter].getRadius() + GAP_THRESHOLD) {
             if (playerBounds.intersects(circleBounds)) {
                 return true;  // Collision detected
             }
@@ -205,6 +202,10 @@ void Engine::update() {
 }
 
 // RENDER FUNCTIONS
+void Engine::renderObjects(sf::RenderTarget& target) {
+    gameWorldPtr->render(target);
+}
+
 void Engine::render() {
     mainView.setCenter(player.getPosition());
     // Draw
@@ -217,10 +218,9 @@ void Engine::render() {
     window->clear(CustomColors::groundColor);
 
     window->setView(mainView);
-    for (auto iter = 0; iter < gameWorldPtr->treeVector.size(); ++iter) {
-        window->draw(gameWorldPtr->treeVector[iter]);
-    }
-    // window->draw(object);
+
+    // Draw objects
+    renderObjects(*this->window);
 
     window->draw(*fogPtr);
     window->draw(player);
