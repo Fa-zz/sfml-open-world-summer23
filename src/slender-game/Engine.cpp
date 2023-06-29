@@ -2,13 +2,13 @@
 
 // PRIVATE FUNCTIONS, INIT FUNCTIONS
 void Engine::initWindow() {
-    window = new sf::RenderWindow(sf::VideoMode(1920,1080), "Night In a Forest", sf::Style::Default | sf::Style::Close);
+    window = new sf::RenderWindow(sf::VideoMode(1920,1080), "Forest of Clues", sf::Style::Default | sf::Style::Close);
     window->setFramerateLimit(144);
     window->setVerticalSyncEnabled(false);
 }
 
 void Engine::initVars() {
-    gameAreaSize = sf::Vector2f(15000.f, 15000.f);
+    gameAreaSize = sf::Vector2f(10000.f, 10000.f);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
     playerMoveSpeed = 5.f;
     playerNewPosition = sf::Vector2f(0,0);
@@ -18,8 +18,8 @@ void Engine::initLight() {
     // create a light source
     lightPtr = new candle::RadialLight();
     lightPtr->setBeamAngle(90);
-    lightPtr->setRange(300);
-    lightPtr->setFade(false);
+    lightPtr->setRange(500);
+    lightPtr->setFade(true);
 
     fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(0.f,0.f), gameAreaSize);
     std::cout << "Fog ptr global bounds: " << fogPtr->getGlobalBounds().height << " " << fogPtr->getGlobalBounds().width << std::endl;
@@ -36,8 +36,10 @@ void Engine::initPlayer() {
 void Engine::initObjects() {
     initPlayer();
 
-    object.setSize(sf::Vector2f(100.f,100.f));
-    object.setPosition(800.f,800.f);
+    // object.setSize(sf::Vector2f(100.f,100.f));
+    // object.setPosition(800.f,800.f);
+
+    gameWorldPtr = new World(gameAreaSize, 200, 100);
 
     UIElem.setSize(sf::Vector2f(300.f,50.f));
 }
@@ -60,6 +62,7 @@ Engine::~Engine() {
     delete lightPtr;
     delete fogPtr;
     delete gameAreaBoundsPtr;
+    delete gameWorldPtr;
 }
 
 // RUN, UPDATE, POLL EVENTS FUNCTIONS
@@ -86,6 +89,7 @@ void Engine::pollEvents() {
 }
 
 void Engine::updatePlayer() {
+    std::cout << "PLAYER POS: " << player.getPosition().x << " " << player.getPosition().y << std::endl;
     playerMovement = sf::Vector2f(0,0);
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
@@ -143,7 +147,10 @@ void Engine::render() {
     window->clear(myColor);
 
     window->setView(mainView);
-    window->draw(object);
+    for (auto iter = 0; iter < gameWorldPtr->treeVector.size(); ++iter) {
+            window->draw(gameWorldPtr->treeVector[iter]);
+        }
+    // window->draw(object);
 
     window->draw(*fogPtr);
     window->draw(player);

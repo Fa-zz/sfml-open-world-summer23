@@ -1,12 +1,9 @@
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
-#include <SFML/Window.hpp>
+#pragma once
+
+#include "World.hpp"
 
 #include "Candle/RadialLight.hpp"
 #include "Candle/LightingArea.hpp"
-
-#include <vector>
-#include <iostream>
 
 class Engine {
 private:
@@ -33,6 +30,9 @@ private:
     sf::CircleShape player;
     sf::RectangleShape object;
     sf::RectangleShape UIElem;
+
+    // World
+    World* gameWorldPtr;
 
     // Private functions
     void initWindow();
