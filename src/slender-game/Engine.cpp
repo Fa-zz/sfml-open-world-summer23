@@ -39,7 +39,7 @@ void Engine::generatePlayerPosition() {
 
 void Engine::initPlayer() {
     player.setRadius(25.f);
-    player.setFillColor(sf::Color::Yellow);
+    player.setFillColor(CustomColors::skinTone);
 
     generatePlayerPosition();
     while (playerObjectCollision(player)) {
@@ -48,7 +48,7 @@ void Engine::initPlayer() {
 }
 
 void Engine::initObjects() {
-    gameWorldPtr = new World(gameAreaSize, 300, 100);
+    gameWorldPtr = new World(gameAreaSize, 400, 100);
 
     initPlayer();
 
@@ -214,9 +214,7 @@ void Engine::render() {
     fogPtr->draw(*lightPtr);
     fogPtr->display();
 
-    sf::Color groundColor(74,103,65);
-
-    window->clear(groundColor);
+    window->clear(CustomColors::groundColor);
 
     window->setView(mainView);
     for (auto iter = 0; iter < gameWorldPtr->treeVector.size(); ++iter) {

@@ -33,19 +33,15 @@ void World::generateTrees() {
         float y = randomFloat(0+150.f, m_gameAreaSize.y-150.f);
         std::cout << "Tree vector size: " << treeVector.size() << " Tree x: " << x << " Tree y: " << y << std::endl;
 
-        //TODO: Move all colors to separate file.
         //TODO: Randomize colors.
-        sf::Color treeBarkColor(37,21,11);
-        sf::Color leafColor(58,95,11);
-
         //TODO: organize random generation more cleanly (all random values top of loop)
         float treeRadius = randomFloat(70.f, 110.f);
         int treeOutlineThickness = randomInt(20, 60);
 
         sf::CircleShape circle(treeRadius);
-        circle.setFillColor(treeBarkColor);
+        circle.setFillColor(CustomColors::treeBarkColor);
         circle.setOutlineThickness(treeOutlineThickness);
-        circle.setOutlineColor(leafColor);
+        circle.setOutlineColor(CustomColors::leafColor);
         circle.setPosition(x, y);
 
         bool intersects = std::any_of(treeVector.begin(), treeVector.end(), [&](const sf::CircleShape& existingCircle) {
