@@ -12,10 +12,10 @@
 
 class World {
 private:
-    int m_numTrees, m_numRocks;
-
+    // Generate world functions
     void generateTrees();
     void generateRocks();
+    void generateMudPatch();
 public:
     // Variables
     sf::Vector2f m_gameAreaSize;
@@ -28,10 +28,12 @@ public:
 
     // Objects
     std::vector<sf::CircleShape> treesVector;
-    std::vector<sf::RectangleShape> rocksVector;
+    std::vector<sf::RectangleShape> fallenTreesVector;
+    std::vector<sf::CircleShape> rocksVector;
+    std::vector<sf::RectangleShape> mudPatchVector;
 
     // Constructor / destructor
-    World(sf::Vector2f gameAreaSize, int numTrees, int numRocks);
+    World();
     virtual ~World();
 
     // Render functions

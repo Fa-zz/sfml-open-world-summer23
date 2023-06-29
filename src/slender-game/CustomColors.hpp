@@ -19,5 +19,5 @@ namespace CustomColors {
     inline const sf::Color rockColor5(138,154,91); // mossy color
     inline const sf::Color rockColor6(102,106,108);
 
-
+    inline const sf::Color mudColor(116,86,68);
 }

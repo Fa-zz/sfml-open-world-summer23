@@ -45,7 +45,7 @@ void Engine::initPlayer() {
 }
 
 void Engine::initObjects() {
-    gameWorldPtr = new World(gameAreaSize, Data::numTrees, Data::numRocks);
+    gameWorldPtr = new World();
 
     initPlayer();
 
@@ -113,7 +113,10 @@ void Engine::playerOutOfBoundsAdjust() {
 bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
     float GAP_THRESHOLD = 10.f;
     sf::FloatRect playerBounds = playerArg.getGlobalBounds();
-    
+    for (auto iter = 0; iter < gameWorldPtr->fallenTreesVector.size(); ++iter) {
+        if (playerBounds.intersects(gameWorldPtr->fallenTreesVector[iter].getGlobalBounds()))
+            return true;
+    }
     for (auto iter = 0; iter < gameWorldPtr->treesVector.size(); ++iter) {
         sf::FloatRect circleBounds = gameWorldPtr->treesVector[iter].getGlobalBounds();
         

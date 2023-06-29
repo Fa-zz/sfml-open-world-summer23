@@ -28,9 +28,9 @@ bool World::checkIntersection(const sf::Shape& shape1, const sf::Shape& shape2) 
 
 // Populate world
 void World::generateTrees() {
-    while (treesVector.size() < m_numTrees) {
-        float x = randomFloat(0+150.f, m_gameAreaSize.x-150.f);
-        float y = randomFloat(0+150.f, m_gameAreaSize.y-150.f);
+    while (treesVector.size() < Data::numTrees) {
+        float x = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, Data::gameWorldSizeY-150.f);
         std::cout << "Tree vector size: " << treesVector.size() << " Tree x: " << x << " Tree y: " << y << std::endl;
 
         //TODO: Randomize colors.
@@ -52,88 +52,129 @@ void World::generateTrees() {
         {
             treesVector.push_back(circle);
         }
-
+    
     }
-}
 
-void World::generateRocks() {
-    while (rocksVector.size() < m_numRocks) {
-        float x = randomFloat(0+150.f, m_gameAreaSize.x-150.f);
-        float y = randomFloat(0+150.f, m_gameAreaSize.y-150.f);
-        std::cout << "Rock vector size: " << rocksVector.size() << " Rock x: " << x << " Rock y: " << y << std::endl;
+    while (fallenTreesVector.size() < Data::numFallenTrees) {
+        float x = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
         sf::RectangleShape rectangle;
 
-        int rockBiglinessChance = randomInt(1,4);
-        int rockColorChance = randomInt(1,7);
-
-        switch(rockBiglinessChance) {
-        case 1:
-            rectangle.setSize(sf::Vector2f(
-                randomFloat(30.f, 60.f),
-                randomFloat(30.f, 40.f)
-            ));
-            break;
-        case 2:
-            rectangle.setSize(sf::Vector2f(
-                randomFloat(60.f, 100.f),
-                randomFloat(50.f, 70.f)
-            ));
-            break;
-        case 3:
-            rectangle.setSize(sf::Vector2f(
-                randomFloat(20.f, 40.f),
-                randomFloat(30.f, 40.f)
-            ));
-            break;
-        }
-
-        switch(rockColorChance) {
-        case 1:
-            rectangle.setFillColor(CustomColors::rockColor1);
-            break;
-        case 2:
-            rectangle.setFillColor(CustomColors::rockColor2);
-            break;
-        case 3:
-            rectangle.setFillColor(CustomColors::rockColor3);
-            break;
-        case 4:
-            rectangle.setFillColor(CustomColors::rockColor4);
-            break;
-        case 5:
-            rectangle.setFillColor(CustomColors::rockColor5);
-            break;
-        case 6:
-            rectangle.setFillColor(CustomColors::rockColor6);
-            break;
-        default:
-            rectangle.setFillColor(sf::Color::Black);
-        }
-
-        // rectangle.setSize(sf::Vector2f(rockWidth, rockHeight));
         rectangle.setPosition(x, y);
+        rectangle.setSize(sf::Vector2f(
+            400.f,
+            100.f
+        ));
+        rectangle.setFillColor(CustomColors::treeBarkColor);
 
-        bool intersects = std::any_of(rocksVector.begin(), rocksVector.end(), [&](const sf::RectangleShape& existingRectangle) {
-            return checkIntersection(rectangle, existingRectangle);
-        });
-
-        intersects = intersects || std::any_of(treesVector.begin(), treesVector.end(), [&](const sf::CircleShape& existingCircle) {
+        bool intersects = std::any_of(treesVector.begin(), treesVector.end(), [&](const sf::CircleShape& existingCircle) {
             return checkIntersection(rectangle, existingCircle);
         });
 
         if (!intersects)
         {
-            rocksVector.push_back(rectangle);
+            fallenTreesVector.push_back(rectangle);
+        }
+
+    }
+}
+
+void World::generateRocks() {
+    while (rocksVector.size() < Data::numRocks) {
+        float x = randomFloat(0+150.f, m_gameAreaSize.x-150.f);
+        float y = randomFloat(0+150.f, m_gameAreaSize.y-150.f);
+        sf::CircleShape rock;
+
+        int rockBiglinessChance = randomInt(1,3);
+        int rockColorChance = randomInt(1,7);
+
+        switch(rockBiglinessChance) {
+        case 1:
+            rock.setRadius(
+                randomFloat(10.f, 20.f)
+                );
+            break;
+        case 2:
+            rock.setRadius(
+                randomFloat(20.f, 50.f)
+                );
+            break;
+        }
+
+        switch(rockColorChance) {
+        case 1:
+            rock.setFillColor(CustomColors::rockColor1);
+            break;
+        case 2:
+            rock.setFillColor(CustomColors::rockColor2);
+            break;
+        case 3:
+            rock.setFillColor(CustomColors::rockColor3);
+            break;
+        case 4:
+            rock.setFillColor(CustomColors::rockColor4);
+            break;
+        case 5:
+            rock.setFillColor(CustomColors::rockColor5);
+            break;
+        case 6:
+            rock.setFillColor(CustomColors::rockColor6);
+            break;
+        default:
+            rock.setFillColor(sf::Color::Black);
+        }
+
+        // rectangle.setSize(sf::Vector2f(rockWidth, rockHeight));
+        rock.setPosition(x, y);
+
+        bool intersects = std::any_of(rocksVector.begin(), rocksVector.end(), [&](const sf::CircleShape& existingRock) {
+            return checkIntersection(rock, existingRock);
+        });
+
+        intersects = intersects || std::any_of(treesVector.begin(), treesVector.end(), [&](const sf::CircleShape& existingCircle) {
+            return checkIntersection(rock, existingCircle);
+        });
+
+        if (!intersects)
+        {
+            rocksVector.push_back(rock);
         }
     }
 }
 
+void World::generateMudPatch() {
+    float x = randomFloat(0+150.f, m_gameAreaSize.x-150.f);
+    float y = randomFloat(0+150.f, m_gameAreaSize.y-150.f);
+    sf::RectangleShape mudPatch;
+
+    mudPatch.setSize(sf::Vector2f(500, 500));
+    mudPatch.setFillColor(CustomColors::mudColor);
+    mudPatch.setOutlineColor(sf::Color::Black);
+    mudPatch.setOutlineThickness(10.f);
+
+    mudPatch.setPosition(x, y);
+
+    bool intersects = std::any_of(mudPatchVector.begin(), mudPatchVector.end(), [&](const sf::RectangleShape& existingMud) {
+        return checkIntersection(mudPatch, existingMud);
+    });
+
+    // intersects = intersects || std::any_of(treesVector.begin(), treesVector.end(), [&](const sf::CircleShape& existingCircle) {
+    //     return checkIntersection(mudPatch, existingCircle);
+    // });
+
+    if (!intersects)
+    {
+        mudPatchVector.push_back(mudPatch);
+    }
+
+}
+
 // CONSTRUCTOR / DESTRUCTOR
-World::World(sf::Vector2f gameAreaSize, int numTrees, int numRocks): 
-    m_gameAreaSize(gameAreaSize), m_numTrees(numTrees), m_numRocks(numRocks) {
+World::World() {
     srand(time(0));
     generateTrees();
     generateRocks();
+    generateMudPatch();
 }
 
 World::~World() {
@@ -141,8 +182,14 @@ World::~World() {
 }
 
 void World::render(sf::RenderTarget& target) {
+    for (auto iter = 0; iter < mudPatchVector.size(); ++iter) {
+        target.draw(mudPatchVector[iter]);
+    }
     for (auto iter = 0; iter < treesVector.size(); ++iter) {
         target.draw(treesVector[iter]);
+    }
+    for (auto iter = 0; iter < fallenTreesVector.size(); ++iter) {
+        target.draw(fallenTreesVector[iter]);
     }
     for (auto iter = 0; iter < rocksVector.size(); ++iter) {
         target.draw(rocksVector[iter]);
