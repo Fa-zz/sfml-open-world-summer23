@@ -15,8 +15,9 @@ namespace Data {
     inline const float lightRange1 = 500;
 
     inline const int numTrees = 400;
-    inline const int numFallenTrees = 50;
-    inline const int numRocks = 900;
-    inline const int numMudPatch = 10;
+    inline const int numFallenTrees = 80;
+    inline const int numRocks = 1000;
+    inline const int numMudPatches = 10;
+    inline const int numBushes = 200;
 
 }

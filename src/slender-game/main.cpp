@@ -2,7 +2,7 @@
 
 int main() {
     //TODO: Add more documentation!
-    //TODO: Place all hardcoded values to separate file
+    //TODO: Player should move more slowly when walking through mud or bushes.
     Engine engine;
     engine.run();
     return 0;

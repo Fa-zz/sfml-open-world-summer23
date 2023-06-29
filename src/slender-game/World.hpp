@@ -15,7 +15,8 @@ private:
     // Generate world functions
     void generateTrees();
     void generateRocks();
-    void generateMudPatch();
+    void generateMudPatches();
+    void generateBushes();
 public:
     // Variables
     sf::Vector2f m_gameAreaSize;
@@ -30,7 +31,8 @@ public:
     std::vector<sf::CircleShape> treesVector;
     std::vector<sf::RectangleShape> fallenTreesVector;
     std::vector<sf::CircleShape> rocksVector;
-    std::vector<sf::RectangleShape> mudPatchVector;
+    std::vector<sf::RectangleShape> mudPatchesVector;
+    std::vector<sf::CircleShape> bushesVector;
 
     // Constructor / destructor
     World();
