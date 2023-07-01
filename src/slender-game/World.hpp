@@ -5,8 +5,10 @@
 #include <iostream>
 #include <time.h>
 
+#include <sstream>
 #include <vector>
 
+#include "fps.cpp"
 #include "CustomColors.hpp"
 #include "Data.hpp"
 
@@ -17,6 +19,8 @@ private:
     void generateRocks();
     void generateMudPatches();
     void generateBushes();
+    void generateShrubs();
+    //void populateWorld();
 public:
     // Variables
     sf::Vector2f m_gameAreaSize;
@@ -33,6 +37,7 @@ public:
     std::vector<sf::CircleShape> rocksVector;
     std::vector<sf::RectangleShape> mudPatchesVector;
     std::vector<sf::CircleShape> bushesVector;
+    std::vector<sf::CircleShape> shrubsVector;
 
     // Constructor / destructor
     World();

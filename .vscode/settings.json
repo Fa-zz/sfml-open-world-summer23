@@ -63,6 +63,9 @@
         "variant": "cpp",
         "vector": "cpp",
         "algorithm": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "any": "cpp",
+        "deque": "cpp",
+        "iomanip": "cpp"
     }
 }

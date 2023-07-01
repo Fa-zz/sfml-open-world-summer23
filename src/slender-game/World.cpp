@@ -28,13 +28,11 @@ bool World::checkIntersection(const sf::Shape& shape1, const sf::Shape& shape2) 
 
 // Populate world
 void World::generateTrees() {
-    while (treesVector.size() < Data::numTrees) {
-        float x = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
-        float y = randomFloat(0+150.f, Data::gameWorldSizeY-150.f);
-        std::cout << "Tree vector size: " << treesVector.size() << " Tree x: " << x << " Tree y: " << y << std::endl;
+    while (treesVector.size() < DataSettings::numTrees) {
+        float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
 
         //TODO: Randomize colors.
-        //TODO: organize random generation more cleanly (all random values top of loop)
         float treeRadius = randomFloat(70.f, 110.f);
         int treeOutlineThickness = randomInt(20, 60);
 
@@ -55,9 +53,9 @@ void World::generateTrees() {
     
     }
 
-    while (fallenTreesVector.size() < Data::numFallenTrees) {
-        float x = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
-        float y = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
+    while (fallenTreesVector.size() < DataSettings::numFallenTrees) {
+        float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
         sf::RectangleShape rectangle;
 
         int treeHorizOrVertChance = randomInt(1,3);
@@ -93,9 +91,9 @@ void World::generateTrees() {
 }
 
 void World::generateRocks() {
-    while (rocksVector.size() < Data::numRocks) {
-        float x = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
-        float y = randomFloat(0+150.f, Data::gameWorldSizeY-150.f);
+    while (rocksVector.size() < DataSettings::numRocks) {
+        float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
         sf::CircleShape rock;
 
         int rockBiglinessChance = randomInt(1,3);
@@ -156,9 +154,9 @@ void World::generateRocks() {
 }
 
 void World::generateMudPatches() {
-    while (mudPatchesVector.size() < Data::numMudPatches) {
-        float x = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
-        float y = randomFloat(0+150.f, Data::gameWorldSizeY-150.f);
+    while (mudPatchesVector.size() < DataSettings::numMudPatches) {
+        float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
         sf::RectangleShape mudPatch;
 
         mudPatch.setSize(sf::Vector2f(500, 500));
@@ -186,9 +184,9 @@ void World::generateMudPatches() {
 }
 
 void World::generateBushes() {
-    while (bushesVector.size() < Data::numMudPatches) {
-        float x = randomFloat(0+150.f, Data::gameWorldSizeX-150.f);
-        float y = randomFloat(0+150.f, Data::gameWorldSizeY-150.f);
+    while (bushesVector.size() < DataSettings::numBushes) {
+        float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
         sf::CircleShape bush(100.f, 8);
 
         bush.setFillColor(CustomColors::bushColor);
@@ -219,6 +217,58 @@ void World::generateBushes() {
 
 }
 
+void World::generateShrubs() {
+    while (shrubsVector.size() < DataSettings::numShrubs) {
+        float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
+        sf::CircleShape shrub(80.f, 9);
+
+        int shrubColorChance = randomInt(1, 4);
+
+        switch (shrubColorChance){
+        case 1:
+            shrub.setFillColor(CustomColors::shrubColor1);
+            break;
+        case 2:
+            shrub.setFillColor(CustomColors::shrubColor2);
+            break;
+        case 3:
+            shrub.setFillColor(CustomColors::shrubColor3);
+            break;
+        }
+        
+        shrub.setPosition(x, y);
+
+        bool intersects = std::any_of(shrubsVector.begin(), shrubsVector.end(), [&](const sf::CircleShape& existingShrub) {
+            return checkIntersection(shrub, existingShrub);
+        });
+
+        intersects = intersects || std::any_of(treesVector.begin(), treesVector.end(), [&](const sf::CircleShape& existingTree) {
+            return checkIntersection(shrub, existingTree);
+        });
+
+        intersects = intersects || std::any_of(bushesVector.begin(), bushesVector.end(), [&](const sf::CircleShape& existingBush) {
+            return checkIntersection(shrub, existingBush);
+        });
+
+
+        // intersects = intersects || std::any_of(fallenTreesVector.begin(), fallenTreesVector.end(), [&](const sf::RectangleShape& existingFallenTree) {
+        //     return checkIntersection(shrub, existingFallenTree);
+        // });
+
+        // intersects = intersects || std::any_of(mudPatchesVector.begin(), mudPatchesVector.end(), [&](const sf::RectangleShape& existingMudPatch) {
+        //     return checkIntersection(bush, existingMudPatch);
+        // });
+
+
+        if (!intersects)
+        {
+            shrubsVector.push_back(shrub);
+        }
+    }
+
+}
+
 
 // CONSTRUCTOR / DESTRUCTOR
 World::World() {
@@ -227,6 +277,7 @@ World::World() {
     generateRocks();
     generateMudPatches();
     generateBushes();
+    generateShrubs();
 }
 
 World::~World() {
@@ -248,6 +299,9 @@ void World::render(sf::RenderTarget& target) {
     }
     for (auto iter = 0; iter < bushesVector.size(); ++iter) {
         target.draw(bushesVector[iter]);
+    }
+    for (auto iter = 0; iter < shrubsVector.size(); ++iter) {
+        target.draw(shrubsVector[iter]);
     }
 
 }

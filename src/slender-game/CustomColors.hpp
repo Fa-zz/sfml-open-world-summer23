@@ -22,4 +22,10 @@ namespace CustomColors {
     inline const sf::Color mudColor(116,86,68);
 
     inline const sf::Color bushColor(16,59,29);
+
+    inline const sf::Color shrubColor1(113,169,44,200);
+    inline const sf::Color shrubColor2(78,91,49,200);
+    inline const sf::Color shrubColor3(0,76,84,200);
+
+    inline const sf::Color invisible(0,0,0,0);
 }

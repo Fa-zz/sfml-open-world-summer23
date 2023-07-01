@@ -2,22 +2,23 @@
 
 // PRIVATE FUNCTIONS, INIT FUNCTIONS
 void Engine::initWindow() {
-    window = new sf::RenderWindow(sf::VideoMode(Data::videoModeWidth,Data::videoModeHeight), "Forest of Clues", sf::Style::Default | sf::Style::Close);
-    window->setFramerateLimit(Data::frameRateLimit);
+    window = new sf::RenderWindow(sf::VideoMode(DataSettings::videoModeWidth,DataSettings::videoModeHeight), "Forest of Shapes", sf::Style::Default | sf::Style::Close);
+    window->setFramerateLimit(DataSettings::frameRateLimit);
     window->setVerticalSyncEnabled(false);
+    window->setFramerateLimit(150);
 }
 
 void Engine::initVars() {
-    gameAreaSize = sf::Vector2f(Data::gameWorldSizeX, Data::gameWorldSizeY);
+    gameAreaSize = sf::Vector2f(DataSettings::gameWorldSizeX, DataSettings::gameWorldSizeY);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
-    playerMoveSpeed = Data::playerMoveSpeedWalk;
+    playerMoveSpeed = DataSettings::playerMoveSpeedWalk;
     playerNewPosition = sf::Vector2f(0,0);
 }
 
 void Engine::initLight() {
     // create a light source
     lightPtr = new candle::RadialLight();
-    lightPtr->setRange(Data::lightRange1);
+    lightPtr->setRange(DataSettings::lightRange1);
     lightPtr->setFade(false);
 
     float fogRenderOffset = gameAreaSize.x / 10;
@@ -35,7 +36,7 @@ void Engine::generatePlayerPosition() {
 }
 
 void Engine::initPlayer() {
-    player.setRadius(Data::playerRadiusDefault);
+    player.setRadius(DataSettings::playerRadiusDefault);
     player.setFillColor(CustomColors::skinTone);
 
     generatePlayerPosition();
@@ -48,8 +49,10 @@ void Engine::initObjects() {
     gameWorldPtr = new World();
 
     initPlayer();
+}
 
-    UIElem.setSize(sf::Vector2f(300.f,50.f));
+void Engine::initUI() {
+    gameUIPtr = new GameUI();
 }
 
 void Engine::initView() {
@@ -62,6 +65,7 @@ Engine::Engine() {
     initVars();
     initLight();
     initObjects();
+    initUI();
     initView();
 }
 
@@ -71,6 +75,7 @@ Engine::~Engine() {
     delete fogPtr;
     delete gameAreaBoundsPtr;
     delete gameWorldPtr;
+    delete gameUIPtr;
 }
 
 // RUN, UPDATE, POLL EVENTS FUNCTIONS
@@ -138,6 +143,40 @@ bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
     return false;
 }
 
+void Engine::updateMousePos() {
+    mousePosWindow = sf::Mouse::getPosition(*window);
+    mousePosView = window->mapPixelToCoords(mousePosWindow);
+    // std::cout << "Mouse coords: " << mousePosView.x << " " << mousePosView.y << std::endl;
+}
+
+void Engine::updateMouse() {
+    visibleToPlayer.setRadius(DataSettings::playerRadiusDefault);
+    visibleToPlayer.setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
+    visibleToPlayer.setFillColor(CustomColors::invisible);  // Ironic
+    
+    for (auto iter = 0; iter < gameWorldPtr->mudPatchesVector.size(); ++iter) {
+        if (gameWorldPtr->mudPatchesVector[iter].getGlobalBounds().contains(player.getPosition())) {
+            std::cout << "Over mud" << std::endl;
+        }
+    }
+    // if (visibleToPlayer.getGlobalBounds().contains(mousePosView)) {
+    //     std::cout << "Contains mouse" << std::endl;
+    //     
+        // for (auto iter = 0; iter < gameWorldPtr->treesVector.size(); ++iter) {
+        //     target.draw(treesVector[iter]);
+        // }
+        // for (auto iter = 0; iter < gameWorldPtr->fallenTreesVector.size(); ++iter) {
+        //     target.draw(fallenTreesVector[iter]);
+        // }
+        // for (auto iter = 0; iter < gameWorldPtr->rocksVector.size(); ++iter) {
+        //     target.draw(rocksVector[iter]);
+        // }
+        // for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
+        //     target.draw(bushesVector[iter]);
+        // }
+}
+
+
 void Engine::updatePlayer() {
     sf::Vector2f playerBeforePos = player.getPosition();
     // std::cout << "PLAYER POS: " << player.getPosition().x << " " << player.getPosition().y << std::endl;
@@ -159,52 +198,67 @@ void Engine::updatePlayer() {
         playerMovement.x += playerMoveSpeed;
     }
 
-    std::cout << "PLAYER MOVEMENT: " << playerMovement.x << " " << playerMovement.y << std::endl;
+    // std::cout << "PLAYER MOVEMENT: " << playerMovement.x << " " << playerMovement.y << std::endl;
 
     // Checking if player collides with gameArea or other objects
     playerNewPosition = player.getPosition() + playerMovement;
     sf::CircleShape newPlayer = player;
     newPlayer.setPosition(playerNewPosition);
 
+    // Checking collision between objects and player
     if (gameAreaBoundsPtr->contains(playerNewPosition) && !playerObjectCollision(newPlayer)) {
         player.setPosition(playerNewPosition);  // Update the player's position
     } else {
         if (!(gameAreaBoundsPtr->contains(playerNewPosition))) {
             playerOutOfBoundsAdjust();
         }
-
     }
-
-    // if (gameAreaBoundsPtr->contains(playerNewPosition) && !(playerObjectCollision()))
-    //     player.setPosition(playerNewPosition);
-    // else {
-    //     if (!(gameAreaBoundsPtr->contains(playerNewPosition))) {
-    //         playerOutOfBoundsAdjust();
-    //     }
-    //     if (playerObjectCollision())
-    //         playerObjectCollisionAdjust();
-    //}
-
-    // Checking collision between objects and player
     std::cout << "Player object collision func: " << playerObjectCollision(newPlayer) << std::endl;
-    // if (!playerObjectCollision()) {
-    //     player.setPosition(playerNewPosition);  // Update the player's position
-    // }
+}
+
+void Engine::updateSanity() {
+    if (timer > 5) {
+        gameUIPtr->setSanityBar(-6);
+        timer = 0;
+    }
+}
+
+
+void Engine::updateUI() {
+    updateSanity();
 }
 
 void Engine::update() {
-    pollEvents();
-    updatePlayer();
-
     // Calculate the midpoint of the circle, then set lightPtr equal to
     circlePosition = player.getPosition();
     float circleRadius = player.getRadius();
-    sf::Vector2f playerMidpoint(circlePosition.x + circleRadius, circlePosition.y + circleRadius);
+    playerMidpoint = sf::Vector2f(circlePosition.x + circleRadius, circlePosition.y + circleRadius);
 
     lightPtr->setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
+
+    pollEvents();
+    updatePlayer();
+    updateMousePos();
+    updateMouse();
+
+    fps.update();
+    std::ostringstream ss;
+    ss << fps.getFPS();
+    currentTime = clock.restart().asSeconds();
+    timer += currentTime;
+    std::cout << "Current time: " << currentTime << " Timer: " << timer << std::endl;
+
+    updateUI();
+    
+    window->setTitle("Forest of Shapes || FPS: " + ss.str());
+
 }
 
 // RENDER FUNCTIONS
+void Engine::renderUI(sf::RenderTarget& target) {
+    gameUIPtr->renderUI(target);
+}
+
 void Engine::renderObjects(sf::RenderTarget& target) {
     gameWorldPtr->render(target);
 }
@@ -226,11 +280,18 @@ void Engine::render() {
     renderObjects(*this->window);
 
     window->draw(*fogPtr);
+    window->draw(visibleToPlayer);
     window->draw(player);
+
+    // for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
+    //     if (lightPtr->getGlobalBounds().contains(gameWorldPtr->bushesVector[iter].getOrigin()))
+    //         window->draw(gameWorldPtr->bushesVector[iter]);
+    // }
 
     // Draw UI
     window->setView(window->getDefaultView());
-    window->draw(UIElem);
+    renderUI(*this->window);
+    // window->draw(UIElem);
 
     // Finished drawning
     window->display();
