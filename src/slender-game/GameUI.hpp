@@ -10,12 +10,18 @@ private:
     // Init font
     void initFont();
 
+    //Init vars
+    void initVars();
+
     // Font/text var
     sf:: Font font;
     sf::Text healthBarText;
     sf::Text sanityBarText;
     sf::Text statusMeditatingText;
 
+    // Hiding text
+    sf::Text statusHidingText;
+    sf::Text overHideableText;
 
     // Health bar var
     sf::RectangleShape healthBarTop;
@@ -26,15 +32,22 @@ private:
     sf::RectangleShape sanityBarBottom;
 
     // Meditating, hiding, still, holding breath
-    bool isMeditating;
+    bool isMeditating, isHiding;
+    bool overHideable;
+    bool renderHideableText;
 
 public:
+    void drawOverHideableText(int hideable);
+    void drawStatusTexts();
     void drawHealthBar();
     void drawSanityBar();
-    void drawStatusTexts();
+
+    sf::Vector2f getSanityBarCurrent();
 
     void setSanityBar(int sanityChange);
     void setStatusMeditating(bool meditating);
+    void setOverHideable(bool over);
+    void setStatusHiding(bool hiding);
 
     GameUI();
 

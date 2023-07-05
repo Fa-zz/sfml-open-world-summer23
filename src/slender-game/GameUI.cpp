@@ -1,5 +1,12 @@
 #include "GameUI.hpp"
 
+void GameUI::initVars() {
+    bool isMeditating = false;
+    bool isHiding = false;
+    bool overHideable = false;
+    bool renderHideableText = false;
+}
+
 void GameUI::initFont() {
     if (!font.loadFromFile("./subway-ticker.regular.ttf")) {
         std::cout << "Did Not Load Font" << std::endl;
@@ -7,6 +14,8 @@ void GameUI::initFont() {
         healthBarText.setFont(font);
         sanityBarText.setFont(font);
         statusMeditatingText.setFont(font);
+        statusHidingText.setFont(font);
+        overHideableText.setFont(font);
     }
 }
 
@@ -50,23 +59,53 @@ void GameUI::drawSanityBar() {
     sanityBarText.setPosition(100.f,20.f);
 }
 
+void GameUI::drawOverHideableText(int hideable) {
+    if (hideable == 1) {
+        overHideableText.setString("You can hide in this bush.\nPress Q to hide.");
+    } else if (hideable == 2) {
+        overHideableText.setString("You can hide in this mud.\nPress Q to hide.");
+    }
+
+    overHideableText.setCharacterSize(25);
+    overHideableText.setPosition(1570,310);
+}
+
 void GameUI::drawStatusTexts() {
     statusMeditatingText.setString("Meditating");
     statusMeditatingText.setCharacterSize(40);
     statusMeditatingText.setPosition(100.f,650.f);
+
+    statusHidingText.setString("Hiding");
+    statusHidingText.setCharacterSize(40);
+    statusHidingText.setPosition(100.f,600.f);
+}
+
+sf::Vector2f GameUI::getSanityBarCurrent() {
+    float maxSanity = sanityBarBottom.getSize().x;
+    float currentSanity = sanityBarTop.getSize().x;
+    return sf::Vector2f(currentSanity, maxSanity);
 }
 
 void GameUI::setSanityBar(int sanityChange) {
-    if (!(sanityBarTop.getSize().x + sanityChange < 0))
+    if (!(sanityBarTop.getSize().x + sanityChange < 0) && !(sanityBarTop.getSize().x + sanityChange > sanityBarBottom.getSize().x))
         sanityBarTop.setSize(sf::Vector2f(sanityBarTop.getSize().x + sanityChange, sanityBarTop.getSize().y));
+}
+
+void GameUI::setOverHideable(bool over) {
+    renderHideableText = over;
 }
 
 void GameUI::setStatusMeditating(bool meditating) {
     isMeditating = meditating;
 }
 
+void GameUI::setStatusHiding(bool hiding) {
+    isHiding = hiding;
+}
+
+// constructor
 GameUI::GameUI() {
-    isMeditating = false;
+    initVars();
     initFont();
     drawHealthBar();
     drawSanityBar();
@@ -84,4 +123,8 @@ void GameUI::renderUI(sf::RenderTarget& target) {
 
     if (isMeditating)
         target.draw(statusMeditatingText);
+    if (isHiding)
+        target.draw(statusHidingText);
+    if (renderHideableText)
+        target.draw(overHideableText);
 }

@@ -12,9 +12,11 @@ void Engine::initVars() {
     gameAreaSize = sf::Vector2f(DataSettings::gameWorldSizeX, DataSettings::gameWorldSizeY);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
     playerMoveSpeed = DataSettings::playerMoveSpeedWalk;
+    playerSkinTone = CustomColors::skinTone;
     playerNewPosition = sf::Vector2f(0,0);
     meditateActivated = 0;
     flashlightOn = true;
+    overHideable = false;
 }
 
 void Engine::initLight() {
@@ -40,7 +42,7 @@ void Engine::generatePlayerPosition() {
 
 void Engine::initPlayer() {
     player.setRadius(DataSettings::playerRadiusDefault);
-    player.setFillColor(CustomColors::skinTone);
+    player.setFillColor(playerSkinTone);
 
     generatePlayerPosition();
     while (playerObjectCollision(player)) {
@@ -108,6 +110,9 @@ void Engine::pollEvents() {
         if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Num1) {
             flashlightOn = (!flashlightOn);
             std::cout << "flashlighton: " << flashlightOn << std::endl;
+        }
+        if ((overHideable) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Q) {
+            hidingActivated = (!hidingActivated);
         }
     }
 }
@@ -185,6 +190,8 @@ void Engine::handlePlayerMovement(float modifier) {
 }
 
 void Engine::modifySpeedIfObstacles() {
+    overHideable = false;
+    hideable = 0;
     for (auto iter = 0; iter < gameWorldPtr->shrubsVector.size(); ++iter) {
         if (player.getGlobalBounds().intersects(gameWorldPtr->shrubsVector[iter].getGlobalBounds())) {
             playerSpeedModifier -= 0.5;
@@ -194,12 +201,16 @@ void Engine::modifySpeedIfObstacles() {
     for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
         if (player.getGlobalBounds().intersects(gameWorldPtr->bushesVector[iter].getGlobalBounds())) {
             playerSpeedModifier -= 0.5;
+            overHideable = true;
+            hideable = 1;
             return;
         }
     }
     for (auto iter = 0; iter < gameWorldPtr->mudPatchesVector.size(); ++iter) {
         if (gameWorldPtr->mudPatchesVector[iter].getGlobalBounds().contains(player.getPosition())) {                
             playerSpeedModifier -= 0.5;
+            overHideable = true;
+            hideable = 2;
             return;
         }        
     }
@@ -210,15 +221,12 @@ void Engine::modifySpeedIfObstacles() {
 // TODO: move player collision stuff to its own function
 void Engine::updatePlayer() {
     gameUIPtr->setStatusMeditating(false);
-    std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
-    // sf::Vector2f playerBeforePos = player.getPosition();
-    // std::cout << "PLAYER POS: " << player.getPosition().x << " " << player.getPosition().y << std::endl;
+    // std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
     playerMovement = sf::Vector2f(0,0);
+
     playerSpeedModifier = 1;
-    if (meditateActivated) {
-        // Player meditates
+    if (meditateActivated || hidingActivated) {
         playerSpeedModifier = 0;
-        gameUIPtr->setStatusMeditating(true);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
         playerSpeedModifier = 2;
     }
@@ -229,20 +237,6 @@ void Engine::updatePlayer() {
     }
 
     handlePlayerMovement(playerSpeedModifier);
-
-    // Increase movement if holding down shift
-    // // Meditation
-    // // if (sf::Keyboard::Key(sf::Keyboard::M)) {
-    // //     meditateButtonPressedOnce = (!meditateButtonPressedOnce);
-    // //     std::cout << "Meditation button pushed" << std::endl;
-    // // }
-
-    // if sf::Event::KeyReleased:
-
-    //     if (sf::Event::KeyReleased && e.key.code == sf::Keyboard::M) {
-    //     meditateButtonPressedOnce = (!meditateButtonPressedOnce);
-    //     std::cout << "Meditation button pushed" << std::endl;
-    // }
 
     // Checking if player collides with gameArea or other objects
     playerNewPosition = player.getPosition() + playerMovement;
@@ -260,16 +254,47 @@ void Engine::updatePlayer() {
     // std::cout << "Player object collision func: " << playerObjectCollision(newPlayer) << std::endl;
 }
 
-void Engine::updateSanity() {
-    if (timer > 3) {
-        gameUIPtr->setSanityBar(-6);
-        timer = 0;
+void Engine::updateSanity(bool isMeditating) {
+    if (!isMeditating) {
+        if (sanityTimer > 3) {
+            gameUIPtr->setSanityBar(-6);
+            sanityTimer = 0;
+        }
+    } else {
+        gameUIPtr->setStatusMeditating(true);
+        if (sanityTimer > 6) {
+            gameUIPtr->setSanityBar(6);
+            sanityTimer = 0;
+        }
+    }        
+
+}
+
+void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable) {
+    if (!overHideable)
+        gameUIPtr->setOverHideable(false);
+
+    if (!hidingActivated) {
+        gameUIPtr->setStatusHiding(false);
+        player.setFillColor(playerSkinTone);
+    }
+
+    if (!hidingActivated && overHideable) {
+        gameUIPtr->setOverHideable(true);
+        gameUIPtr->drawOverHideableText(hideable);
+    }
+    
+    if (hidingActivated) {
+        gameUIPtr->setOverHideable(false);
+        gameUIPtr->setStatusHiding(true);
+        player.setFillColor(CustomColors::invisible);
+        flashlightOn = false;
     }
 }
 
-
 void Engine::updateUI() {
-    updateSanity();
+    updateSanity(meditateActivated);
+    updateHiding(hidingActivated, overHideable, hideable);
 }
 
 void Engine::update() {
@@ -298,8 +323,8 @@ void Engine::update() {
     std::ostringstream ss;
     ss << fps.getFPS();
     currentTime = clock.restart().asSeconds();
-    timer += currentTime;
-    std::cout << "Current time: " << currentTime << " Timer: " << timer << std::endl;
+    sanityTimer += currentTime;
+    std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << std::endl;
 
     updateUI();
     
