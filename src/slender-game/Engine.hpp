@@ -96,13 +96,14 @@ public:
     void playerActionsMeditate();
     void playerOutOfBoundsAdjust();
     bool playerObjectCollision(sf::CircleShape& playerArg);
-    void updatePlayer();
     void modifySpeedIfObstacles();
     void handlePlayerMovement(float modifier);
 
     void updateSanity(bool isMeditating);
     void handleBreath();
     void updateHiding(bool hidingActivated, bool overHideable, int hideable);
+    void updateUIActivityLevel(bool statusStill, bool statusWalking, bool statusRunning);
+    void updatePlayer();
     void updateUI();
 
     void update();

@@ -22,7 +22,7 @@ void Engine::initVars() {
     statusStill = false; 
     statusWalking = false;
     statusRunning = false;
-    outOfBreath = false;
+    breathTimer = 0;
 }
 
 void Engine::initLight() {
@@ -224,6 +224,98 @@ void Engine::modifySpeedIfObstacles() {
 
 }
 
+void Engine::updateSanity(bool isMeditating) {
+    if (!isMeditating) {
+        gameUIPtr->setStatusMeditating(false);
+        if (sanityTimer > 3) {
+            gameUIPtr->setSanityBar(-6);
+            sanityTimer = 0;
+        }
+    } else {
+        gameUIPtr->setStatusMeditating(true);
+        if (sanityTimer > 3) {
+            gameUIPtr->setSanityBar(12);
+            sanityTimer = 0;
+        }
+    }        
+}
+
+void Engine::handleBreath() {
+    float breathCurrent = gameUIPtr->getBarCurrent("breath").x;
+    float breathMax = gameUIPtr->getBarCurrent("breath").y;
+    // std::cout << "breath current: " << breathCurrent << " breath max: " << breathMax << std::endl;
+
+    if (statusRunning || (hidingActivated && hideable == 2) || breathCurrent < breathMax) {
+        gameUIPtr->setDisplayBreathBar(true);
+        isBreathing = true;
+        if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent && breathTimer > 1) {
+            gameUIPtr->setBreathBar(-30);
+            breathTimer = 0;
+
+        } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent) && breathTimer > 3) {
+            gameUIPtr->setHealthBar(-12);
+            breathTimer = 0;
+
+        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax && breathTimer > 4 ) {
+            gameUIPtr->setBreathBar(12);
+            breathTimer = 0;
+
+        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax && breathTimer > 2) {
+            gameUIPtr->setBreathBar(30);
+            breathTimer = 0;
+
+        }
+    } else if (breathCurrent == breathMax) {
+        isBreathing = false;
+        gameUIPtr->setDisplayBreathBar(false);
+    }
+}
+
+void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable) {
+    if (!overHideable)
+        gameUIPtr->setOverHideable(false);
+
+    if (!hidingActivated) {
+        gameUIPtr->setStatusHiding(false);
+        player.setFillColor(playerSkinTone);
+        if (leftHiding) {
+            flashlightOn = true;
+            leftHiding = false;
+        }
+    }
+
+    if (!hidingActivated && overHideable) {
+        gameUIPtr->setOverHideable(true);
+        gameUIPtr->drawOverHideableText(hideable);
+    }
+    
+    if (hidingActivated) {
+        gameUIPtr->setOverHideable(false);
+        gameUIPtr->setStatusHiding(true);
+        player.setFillColor(CustomColors::invisible);
+        flashlightOn = false;
+        leftHiding = true;
+    }
+}
+
+void Engine::updateUIActivityLevel(bool statusStill, bool statusWalking, bool statusRunning) {
+    std::string activity;
+    if (statusStill) {
+        activity = "Still";
+    } else if (statusWalking) {
+        activity = "Walking";
+    } else if (statusRunning) {
+        activity = "Running";
+    }
+    gameUIPtr->setStatusActivityLevel(activity);
+}
+
+void Engine::updateUI() {
+    updateSanity(meditateActivated);
+    updateHiding(hidingActivated, overHideable, hideable);
+    updateUIActivityLevel(statusStill, statusWalking, statusRunning);
+}
+
 // TODO: move player collision stuff to its own function
 void Engine::updatePlayer() {
     // std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
@@ -282,86 +374,6 @@ void Engine::updatePlayer() {
     std::cout << "Statusstill: " << statusStill << " Statuswalking: " << statusWalking << " Statusrunning: " << statusRunning << std::endl; 
 }
 
-void Engine::updateSanity(bool isMeditating) {
-    if (!isMeditating) {
-        gameUIPtr->setStatusMeditating(false);
-        if (sanityTimer > 3) {
-            gameUIPtr->setSanityBar(-6);
-            sanityTimer = 0;
-        }
-    } else {
-        gameUIPtr->setStatusMeditating(true);
-        if (sanityTimer > 4) {
-            gameUIPtr->setSanityBar(6);
-            sanityTimer = 0;
-        }
-    }        
-}
-
-void Engine::handleBreath() {
-    float breathCurrent = gameUIPtr->getBarCurrent("breath").x;
-    float breathMax = gameUIPtr->getBarCurrent("breath").y;
-    // std::cout << "breath current: " << breathCurrent << " breath max: " << breathMax << std::endl;
-
-    if (statusRunning || (hidingActivated && hideable == 2) || breathCurrent < breathMax) {
-        gameUIPtr->setDisplayBreathBar(true);
-        isBreathing = true;
-        if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent && breathTimer > 1) {
-            gameUIPtr->setBreathBar(-30);
-            breathTimer = 0;
-
-        } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent) && breathTimer > 3) {
-            gameUIPtr->setHealthBar(-12);
-            breathTimer = 0;
-
-        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax && breathTimer > 4 ) {
-            gameUIPtr->setBreathBar(12);
-            breathTimer = 0;
-            
-        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax && breathTimer > 2) {
-            gameUIPtr->setBreathBar(30);
-            breathTimer = 0;
-        }
-    } else {
-        gameUIPtr->setDisplayBreathBar(false);
-    }
-}
-
-void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable) {
-    if (!overHideable)
-        gameUIPtr->setOverHideable(false);
-
-    if (!hidingActivated) {
-        gameUIPtr->setStatusHiding(false);
-        player.setFillColor(playerSkinTone);
-        if (leftHiding) {
-            flashlightOn = true;
-            leftHiding = false;
-        }
-    }
-
-    if (!hidingActivated && overHideable) {
-        gameUIPtr->setOverHideable(true);
-        gameUIPtr->drawOverHideableText(hideable);
-    }
-    
-    if (hidingActivated) {
-        // if (hideable == 2) {  // if hiding in mud, display breath + update breath
-        //     handleBreath();
-        // }
-        gameUIPtr->setOverHideable(false);
-        gameUIPtr->setStatusHiding(true);
-        player.setFillColor(CustomColors::invisible);
-        flashlightOn = false;
-        leftHiding = true;
-    }
-}
-
-void Engine::updateUI() {
-    updateSanity(meditateActivated);
-    updateHiding(hidingActivated, overHideable, hideable);
-}
-
 void Engine::update() {
     // TODO: Create function for updating light
     // Calculate the midpoint of the circle, then set lightPtr equal to
@@ -389,8 +401,11 @@ void Engine::update() {
     ss << fps.getFPS();
     currentTime = clock.restart().asSeconds();
     sanityTimer += currentTime;
-    if (isBreathing)
+    if (isBreathing) {
         breathTimer += currentTime;
+    } else {
+        breathTimer = 0;
+    }
 
     updateUI();
     

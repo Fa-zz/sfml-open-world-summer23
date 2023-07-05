@@ -19,14 +19,16 @@ private:
     sf:: Font font;
     sf::Text healthBarText;
     sf::Text sanityBarText;
+    sf::Text breathBarText;
+
 
     // Status texts
     sf::Text overHideableText;
 
     sf::Text statusMeditatingText;
     sf::Text statusHidingText;
-
-    sf::Text breathBarText;
+    
+    sf::Text statusActivityLevelText;
 
     // Health bar var
     sf::RectangleShape healthBarTop;
@@ -63,6 +65,8 @@ public:
 
     void setBreathBar(int breathChange);
     void setDisplayBreathBar(bool display);
+
+    void setStatusActivityLevel(std::string level);
 
     void setHealthBar(int healthChange);
 

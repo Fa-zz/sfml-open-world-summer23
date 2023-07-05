@@ -18,6 +18,7 @@ void GameUI::initFont() {
         statusMeditatingText.setFont(font);
         statusHidingText.setFont(font);
         overHideableText.setFont(font);
+        statusActivityLevelText.setFont(font);
     }
 }
 
@@ -91,11 +92,14 @@ void GameUI::drawOverHideableText(int hideable) {
 void GameUI::drawStatusTexts() {
     statusMeditatingText.setString("Meditating");
     statusMeditatingText.setCharacterSize(40);
-    statusMeditatingText.setPosition(100.f,650.f);
+    statusMeditatingText.setPosition(100.f,750.f);
 
     statusHidingText.setString("Hiding");
     statusHidingText.setCharacterSize(40);
     statusHidingText.setPosition(100.f,600.f);
+
+    statusActivityLevelText.setCharacterSize(40);
+    statusActivityLevelText.setPosition(100.f, 450.f);
 }
 
 //TODO: Change to general bar x and y
@@ -146,6 +150,10 @@ void GameUI::setDisplayBreathBar(bool display) {
     renderBreathBar = display;
 }
 
+void GameUI::setStatusActivityLevel(std::string level) {
+    statusActivityLevelText.setString(level);
+}
+
 // constructor
 GameUI::GameUI() {
     initVars();
@@ -169,6 +177,7 @@ void GameUI::renderUI(sf::RenderTarget& target) {
         target.draw(statusMeditatingText);
     if (isHiding)
         target.draw(statusHidingText);
+    target.draw(statusActivityLevelText);
     if (renderHideableText)
         target.draw(overHideableText);
     if (renderBreathBar) {
