@@ -20,14 +20,14 @@ private:
     sf::Text healthBarText;
     sf::Text sanityBarText;
     sf::Text breathBarText;
-
+    sf::Text batteryText;
 
     // Status texts
     sf::Text overHideableText;
 
     sf::Text statusMeditatingText;
     sf::Text statusHidingText;
-    
+
     sf::Text statusActivityLevelText;
 
     // Health bar var
@@ -50,10 +50,12 @@ private:
 
 public:
     void drawOverHideableText(int hideable);
-    void drawStatusTexts();
     void drawHealthBar();
     void drawSanityBar();
     void drawBreathBar();
+    void drawStatusTexts();
+
+    void drawBatteryText();
 
     sf::Vector2f getBarCurrent(std::string bar);
 
@@ -69,6 +71,8 @@ public:
     void setStatusActivityLevel(std::string level);
 
     void setHealthBar(int healthChange);
+
+    void setBattery(std::string battery);
 
     GameUI();
 

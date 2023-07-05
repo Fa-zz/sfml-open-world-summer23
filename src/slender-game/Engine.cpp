@@ -23,6 +23,8 @@ void Engine::initVars() {
     statusWalking = false;
     statusRunning = false;
     breathTimer = 0;
+    flashlightBatteryTimer = 0;
+    overRock = false;
 }
 
 void Engine::initLight() {
@@ -36,6 +38,8 @@ void Engine::initLight() {
     fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-fogRenderOffset,-fogRenderOffset), sf::Vector2f(gameAreaSize.x+(fogRenderOffset*2), gameAreaSize.y+(fogRenderOffset*2)));
     std::cout << "Fog ptr global bounds: " << fogPtr->getGlobalBounds().height << " " << fogPtr->getGlobalBounds().width << std::endl;
     fogPtr->setAreaColor(sf::Color::Black);
+
+    flashlightBattery = 100;
 }
 
 void Engine::generatePlayerPosition() {
@@ -197,6 +201,7 @@ void Engine::handlePlayerMovement(float modifier) {
 
 void Engine::modifySpeedIfObstacles() {
     overHideable = false;
+    overRock = false;
     hideable = 0;
     for (auto iter = 0; iter < gameWorldPtr->shrubsVector.size(); ++iter) {
         if (player.getGlobalBounds().intersects(gameWorldPtr->shrubsVector[iter].getGlobalBounds())) {
@@ -219,6 +224,11 @@ void Engine::modifySpeedIfObstacles() {
             hideable = 2;
             return;
         }        
+    }
+    for (auto iter = 0; iter < gameWorldPtr->rocksVector.size(); ++iter) {
+        if (player.getGlobalBounds().intersects(gameWorldPtr->rocksVector[iter].getGlobalBounds())) {
+            overRock = true;
+        }
     }
     return;
 
@@ -310,12 +320,6 @@ void Engine::updateUIActivityLevel(bool statusStill, bool statusWalking, bool st
     gameUIPtr->setStatusActivityLevel(activity);
 }
 
-void Engine::updateUI() {
-    updateSanity(meditateActivated);
-    updateHiding(hidingActivated, overHideable, hideable);
-    updateUIActivityLevel(statusStill, statusWalking, statusRunning);
-}
-
 // TODO: move player collision stuff to its own function
 void Engine::updatePlayer() {
     // std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
@@ -355,7 +359,6 @@ void Engine::updatePlayer() {
         statusRunning = false;
     }
 
-
     // Checking if player collides with gameArea or other objects
     playerNewPosition = player.getPosition() + playerMovement;
     sf::CircleShape newPlayer = player;
@@ -374,13 +377,17 @@ void Engine::updatePlayer() {
     std::cout << "Statusstill: " << statusStill << " Statuswalking: " << statusWalking << " Statusrunning: " << statusRunning << std::endl; 
 }
 
-void Engine::update() {
-    // TODO: Create function for updating light
+void Engine::updateUI() {
+    updateSanity(meditateActivated);
+    updateHiding(hidingActivated, overHideable, hideable);
+    updateUIActivityLevel(statusStill, statusWalking, statusRunning);
+}
+
+void Engine::updateLight() {
     // Calculate the midpoint of the circle, then set lightPtr equal to
     circlePosition = player.getPosition();
     float circleRadius = player.getRadius();
     playerMidpoint = sf::Vector2f(circlePosition.x + circleRadius, circlePosition.y + circleRadius);
-
     lightPtr->setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
 
     if (!flashlightOn) {
@@ -389,7 +396,18 @@ void Engine::update() {
     } else {
         lightPtr->setFade(false);
         lightPtr->setRange(currentLightRange);
+        if (flashlightBatteryTimer > 5.f) {
+            flashlightBattery -= 1;
+            flashlightBatteryTimer = 0;
+        }
     }
+
+    std::string flashlightBatteryString;
+    flashlightBatteryString = std::to_string(flashlightBattery);
+    gameUIPtr->setBattery(flashlightBatteryString);
+}
+
+void Engine::update() {
 
     pollEvents();
     updatePlayer();
@@ -401,6 +419,7 @@ void Engine::update() {
     ss << fps.getFPS();
     currentTime = clock.restart().asSeconds();
     sanityTimer += currentTime;
+    flashlightBatteryTimer += currentTime;
     if (isBreathing) {
         breathTimer += currentTime;
     } else {
@@ -408,9 +427,10 @@ void Engine::update() {
     }
 
     updateUI();
+    updateLight();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
-    std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << std::endl;
+    std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << std::endl;
 }
 
 // RENDER FUNCTIONS

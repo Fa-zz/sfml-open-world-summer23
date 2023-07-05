@@ -40,12 +40,14 @@ private:
     float currentTime;
     float sanityTimer;
     float breathTimer;
+    float flashlightBatteryTimer;
     FPS fps;
 
-    // Light
+    // Light, battery
     candle::RadialLight* lightPtr;
     candle::LightingArea* fogPtr;
     float currentLightRange;
+    int flashlightBattery;
 
     // Player
     sf::Color playerSkinTone;
@@ -63,6 +65,7 @@ private:
     bool flashlightOn;
     bool overHideable;
     int hideable;               // Where 1 is bush, 2 is mud
+    bool overRock;
     bool hidingActivated;
     bool isBreathing;
     bool leftHiding;
@@ -105,6 +108,7 @@ public:
     void updateUIActivityLevel(bool statusStill, bool statusWalking, bool statusRunning);
     void updatePlayer();
     void updateUI();
+    void updateLight();
 
     void update();
 
