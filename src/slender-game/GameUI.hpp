@@ -14,6 +14,8 @@ private:
     sf:: Font font;
     sf::Text healthBarText;
     sf::Text sanityBarText;
+    sf::Text statusMeditatingText;
+
 
     // Health bar var
     sf::RectangleShape healthBarTop;
@@ -23,10 +25,16 @@ private:
     sf::RectangleShape sanityBarTop;
     sf::RectangleShape sanityBarBottom;
 
+    // Meditating, hiding, still, holding breath
+    bool isMeditating;
+
 public:
     void drawHealthBar();
     void drawSanityBar();
+    void drawStatusTexts();
+
     void setSanityBar(int sanityChange);
+    void setStatusMeditating(bool meditating);
 
     GameUI();
 

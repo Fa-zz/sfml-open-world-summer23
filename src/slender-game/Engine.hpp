@@ -13,6 +13,7 @@ private:
     sf::FloatRect* gameAreaBoundsPtr;
 
     // Player movement vars
+    float playerSpeedModifier;
     float playerMoveSpeed;
     sf::Vector2f playerMovement;
     sf::Vector2f playerNewPosition;
@@ -38,10 +39,12 @@ private:
     sf::Clock clock;
     float currentTime;
     float timer;
+    FPS fps;
 
     // Light
     candle::RadialLight* lightPtr;
     candle::LightingArea* fogPtr;
+    float currentLightRange;
 
     // Player
     sf::CircleShape player;
@@ -52,7 +55,10 @@ private:
     // World
     World* gameWorldPtr;
 
-    FPS fps;
+    // Controls
+    bool meditateActivated;
+    bool meditateButtonHeld;
+    bool flashlightOn;
 
     // Init functions
     void initWindow();
@@ -74,12 +80,15 @@ public:
 
     // Update functions
     void pollEvents();
+
     void updateMousePos();
     void updateMouse();
 
     void playerOutOfBoundsAdjust();
     bool playerObjectCollision(sf::CircleShape& playerArg);
     void updatePlayer();
+    void modifySpeedIfObstacles();
+    void handlePlayerMovement(float modifier);
 
     void updateSanity();
     void updateUI();

@@ -66,6 +66,22 @@
         "queue": "cpp",
         "any": "cpp",
         "deque": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "bit": "cpp",
+        "charconv": "cpp",
+        "condition_variable": "cpp",
+        "format": "cpp",
+        "numbers": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "semaphore": "cpp",
+        "span": "cpp",
+        "*.tcc": "cpp",
+        "functional": "cpp",
+        "iterator": "cpp",
+        "memory_resource": "cpp",
+        "utility": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp"
     }
 }

@@ -6,6 +6,7 @@ void GameUI::initFont() {
     } else {
         healthBarText.setFont(font);
         sanityBarText.setFont(font);
+        statusMeditatingText.setFont(font);
     }
 }
 
@@ -49,24 +50,38 @@ void GameUI::drawSanityBar() {
     sanityBarText.setPosition(100.f,20.f);
 }
 
+void GameUI::drawStatusTexts() {
+    statusMeditatingText.setString("Meditating");
+    statusMeditatingText.setCharacterSize(40);
+    statusMeditatingText.setPosition(100.f,650.f);
+}
+
 void GameUI::setSanityBar(int sanityChange) {
     if (!(sanityBarTop.getSize().x + sanityChange < 0))
         sanityBarTop.setSize(sf::Vector2f(sanityBarTop.getSize().x + sanityChange, sanityBarTop.getSize().y));
 }
 
+void GameUI::setStatusMeditating(bool meditating) {
+    isMeditating = meditating;
+}
+
 GameUI::GameUI() {
+    isMeditating = false;
     initFont();
     drawHealthBar();
     drawSanityBar();
+    drawStatusTexts();
 }
 
 void GameUI::renderUI(sf::RenderTarget& target) {
     target.draw(healthBarBottom);
     target.draw(healthBarTop);
+    target.draw(healthBarText);
 
     target.draw(sanityBarBottom);
     target.draw(sanityBarTop);
-
-    target.draw(healthBarText);
     target.draw(sanityBarText);
+
+    if (isMeditating)
+        target.draw(statusMeditatingText);
 }

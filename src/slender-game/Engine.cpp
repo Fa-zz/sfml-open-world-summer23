@@ -13,12 +13,15 @@ void Engine::initVars() {
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
     playerMoveSpeed = DataSettings::playerMoveSpeedWalk;
     playerNewPosition = sf::Vector2f(0,0);
+    meditateActivated = 0;
+    flashlightOn = true;
 }
 
 void Engine::initLight() {
     // create a light source
     lightPtr = new candle::RadialLight();
-    lightPtr->setRange(DataSettings::lightRange1);
+    currentLightRange = DataSettings::lightRangeFull;
+    lightPtr->setRange(currentLightRange);
     lightPtr->setFade(false);
 
     float fogRenderOffset = gameAreaSize.x / 10;
@@ -88,15 +91,41 @@ void Engine::run() {
 }
 
 void Engine::pollEvents() {
+    window->setKeyRepeatEnabled(false);
     sf::Event e;
     while(window->pollEvent(e)) {
-        if (e.Event::type == sf::Event::Closed) {
+        if (e.type == sf::Event::Closed) {
             std::cout << "WINDOW CLOSED" << std::endl;
             window->close();
         }
-        if (e.Event::KeyPressed && e.Event::key.code == sf::Keyboard::Escape) {
+        if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Escape) {
             std::cout << "WINDOW CLOSED, ESCAPE" << std::endl;
             window->close();
+        }
+        if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::M) {
+            meditateActivated = (!meditateActivated);
+        }
+        if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Num1) {
+            flashlightOn = (!flashlightOn);
+            std::cout << "flashlighton: " << flashlightOn << std::endl;
+        }
+    }
+}
+
+void Engine::updateMousePos() {
+    mousePosWindow = sf::Mouse::getPosition(*window);
+    mousePosView = window->mapPixelToCoords(mousePosWindow);
+    std::cout << "Mouse coords: " << mousePosView.x << " " << mousePosView.y << std::endl;
+}
+
+void Engine::updateMouse() {
+    visibleToPlayer.setRadius(DataSettings::playerRadiusDefault);
+    visibleToPlayer.setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
+    visibleToPlayer.setFillColor(CustomColors::invisible);  // Ironic
+    
+    for (auto iter = 0; iter < gameWorldPtr->mudPatchesVector.size(); ++iter) {
+        if (gameWorldPtr->mudPatchesVector[iter].getGlobalBounds().contains(player.getPosition())) {
+            std::cout << "Over mud" << std::endl;
         }
     }
 }
@@ -116,8 +145,9 @@ void Engine::playerOutOfBoundsAdjust() {
 }
 
 bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
-    float GAP_THRESHOLD = 10.f;
     sf::FloatRect playerBounds = playerArg.getGlobalBounds();
+
+    float GAP_THRESHOLD = 10.f;
     for (auto iter = 0; iter < gameWorldPtr->fallenTreesVector.size(); ++iter) {
         if (playerBounds.intersects(gameWorldPtr->fallenTreesVector[iter].getGlobalBounds()))
             return true;
@@ -143,62 +173,76 @@ bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
     return false;
 }
 
-void Engine::updateMousePos() {
-    mousePosWindow = sf::Mouse::getPosition(*window);
-    mousePosView = window->mapPixelToCoords(mousePosWindow);
-    // std::cout << "Mouse coords: " << mousePosView.x << " " << mousePosView.y << std::endl;
+void Engine::handlePlayerMovement(float modifier) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        playerMovement.y -= playerMoveSpeed*modifier;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        playerMovement.y += playerMoveSpeed*modifier;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        playerMovement.x -= playerMoveSpeed*modifier;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        playerMovement.x += playerMoveSpeed*modifier;
 }
 
-void Engine::updateMouse() {
-    visibleToPlayer.setRadius(DataSettings::playerRadiusDefault);
-    visibleToPlayer.setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
-    visibleToPlayer.setFillColor(CustomColors::invisible);  // Ironic
-    
-    for (auto iter = 0; iter < gameWorldPtr->mudPatchesVector.size(); ++iter) {
-        if (gameWorldPtr->mudPatchesVector[iter].getGlobalBounds().contains(player.getPosition())) {
-            std::cout << "Over mud" << std::endl;
+void Engine::modifySpeedIfObstacles() {
+    for (auto iter = 0; iter < gameWorldPtr->shrubsVector.size(); ++iter) {
+        if (player.getGlobalBounds().intersects(gameWorldPtr->shrubsVector[iter].getGlobalBounds())) {
+            playerSpeedModifier -= 0.5;
+            return;
         }
     }
-    // if (visibleToPlayer.getGlobalBounds().contains(mousePosView)) {
-    //     std::cout << "Contains mouse" << std::endl;
-    //     
-        // for (auto iter = 0; iter < gameWorldPtr->treesVector.size(); ++iter) {
-        //     target.draw(treesVector[iter]);
-        // }
-        // for (auto iter = 0; iter < gameWorldPtr->fallenTreesVector.size(); ++iter) {
-        //     target.draw(fallenTreesVector[iter]);
-        // }
-        // for (auto iter = 0; iter < gameWorldPtr->rocksVector.size(); ++iter) {
-        //     target.draw(rocksVector[iter]);
-        // }
-        // for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
-        //     target.draw(bushesVector[iter]);
-        // }
+    for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
+        if (player.getGlobalBounds().intersects(gameWorldPtr->bushesVector[iter].getGlobalBounds())) {
+            playerSpeedModifier -= 0.5;
+            return;
+        }
+    }
+    for (auto iter = 0; iter < gameWorldPtr->mudPatchesVector.size(); ++iter) {
+        if (gameWorldPtr->mudPatchesVector[iter].getGlobalBounds().contains(player.getPosition())) {                
+            playerSpeedModifier -= 0.5;
+            return;
+        }        
+    }
+    return;
+
 }
 
-
+// TODO: move player collision stuff to its own function
 void Engine::updatePlayer() {
-    sf::Vector2f playerBeforePos = player.getPosition();
+    gameUIPtr->setStatusMeditating(false);
+    std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
+    // sf::Vector2f playerBeforePos = player.getPosition();
     // std::cout << "PLAYER POS: " << player.getPosition().x << " " << player.getPosition().y << std::endl;
     playerMovement = sf::Vector2f(0,0);
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        playerMovement.y -= playerMoveSpeed;
-    } 
-    
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        playerMovement.y += playerMoveSpeed;
+    playerSpeedModifier = 1;
+    if (meditateActivated) {
+        // Player meditates
+        playerSpeedModifier = 0;
+        gameUIPtr->setStatusMeditating(true);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+        playerSpeedModifier = 2;
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        playerMovement.x -= playerMoveSpeed;
+    // Adjust speed given obstacles
+    if (playerSpeedModifier) {
+        modifySpeedIfObstacles();
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        playerMovement.x += playerMoveSpeed;
-    }
+    handlePlayerMovement(playerSpeedModifier);
 
-    // std::cout << "PLAYER MOVEMENT: " << playerMovement.x << " " << playerMovement.y << std::endl;
+    // Increase movement if holding down shift
+    // // Meditation
+    // // if (sf::Keyboard::Key(sf::Keyboard::M)) {
+    // //     meditateButtonPressedOnce = (!meditateButtonPressedOnce);
+    // //     std::cout << "Meditation button pushed" << std::endl;
+    // // }
+
+    // if sf::Event::KeyReleased:
+
+    //     if (sf::Event::KeyReleased && e.key.code == sf::Keyboard::M) {
+    //     meditateButtonPressedOnce = (!meditateButtonPressedOnce);
+    //     std::cout << "Meditation button pushed" << std::endl;
+    // }
 
     // Checking if player collides with gameArea or other objects
     playerNewPosition = player.getPosition() + playerMovement;
@@ -213,11 +257,11 @@ void Engine::updatePlayer() {
             playerOutOfBoundsAdjust();
         }
     }
-    std::cout << "Player object collision func: " << playerObjectCollision(newPlayer) << std::endl;
+    // std::cout << "Player object collision func: " << playerObjectCollision(newPlayer) << std::endl;
 }
 
 void Engine::updateSanity() {
-    if (timer > 5) {
+    if (timer > 3) {
         gameUIPtr->setSanityBar(-6);
         timer = 0;
     }
@@ -229,12 +273,21 @@ void Engine::updateUI() {
 }
 
 void Engine::update() {
+    // TODO: Create function for updating light
     // Calculate the midpoint of the circle, then set lightPtr equal to
     circlePosition = player.getPosition();
     float circleRadius = player.getRadius();
     playerMidpoint = sf::Vector2f(circlePosition.x + circleRadius, circlePosition.y + circleRadius);
 
     lightPtr->setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
+
+    if (!(flashlightOn)) {
+        lightPtr->setFade(true);
+        lightPtr->setRange(DataSettings::lightRangeOff);
+    } else {
+        lightPtr->setFade(false);
+        lightPtr->setRange(currentLightRange);
+    }
 
     pollEvents();
     updatePlayer();
