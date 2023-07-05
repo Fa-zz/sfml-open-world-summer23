@@ -5,6 +5,7 @@ void GameUI::initVars() {
     bool isHiding = false;
     bool overHideable = false;
     bool renderHideableText = false;
+    bool renderBreathBar = false;
 }
 
 void GameUI::initFont() {
@@ -13,6 +14,7 @@ void GameUI::initFont() {
     } else {
         healthBarText.setFont(font);
         sanityBarText.setFont(font);
+        breathBarText.setFont(font);
         statusMeditatingText.setFont(font);
         statusHidingText.setFont(font);
         overHideableText.setFont(font);
@@ -59,6 +61,22 @@ void GameUI::drawSanityBar() {
     sanityBarText.setPosition(100.f,20.f);
 }
 
+void GameUI::drawBreathBar() {
+    breathBarTop.setSize(sf::Vector2f(300.f,40.f));
+    breathBarTop.setPosition(sf::Vector2f(1550.f,220.f));
+    breathBarTop.setFillColor(CustomColors::breathBarColor);
+
+    breathBarBottom.setSize(sf::Vector2f(300.f,40.f));
+    breathBarBottom.setPosition(sf::Vector2f(1550.f,220.f));
+    breathBarBottom.setFillColor(sf::Color::Red);
+    breathBarBottom.setOutlineColor(sf::Color::Black);
+    breathBarBottom.setOutlineThickness(5.f);
+
+    breathBarText.setString("Breath");
+    breathBarText.setCharacterSize(30);
+    breathBarText.setPosition(1600.f,180.f);
+}
+
 void GameUI::drawOverHideableText(int hideable) {
     if (hideable == 1) {
         overHideableText.setString("You can hide in this bush.\nPress Q to hide.");
@@ -80,15 +98,36 @@ void GameUI::drawStatusTexts() {
     statusHidingText.setPosition(100.f,600.f);
 }
 
-sf::Vector2f GameUI::getSanityBarCurrent() {
-    float maxSanity = sanityBarBottom.getSize().x;
-    float currentSanity = sanityBarTop.getSize().x;
-    return sf::Vector2f(currentSanity, maxSanity);
+//TODO: Change to general bar x and y
+sf::Vector2f GameUI::getBarCurrent(std::string bar) {
+    float current;
+    float max;
+    if (bar == "sanity") {
+        current = sanityBarTop.getSize().x;
+        max = sanityBarBottom.getSize().x;
+    } else if (bar == "health") {
+        current = healthBarTop.getSize().x;
+        max = healthBarBottom.getSize().x;
+    } else if (bar == "breath") {
+        current = breathBarTop.getSize().x;
+        max = breathBarBottom.getSize().x;
+    }
+    return sf::Vector2f(current, max);
 }
 
 void GameUI::setSanityBar(int sanityChange) {
     if (!(sanityBarTop.getSize().x + sanityChange < 0) && !(sanityBarTop.getSize().x + sanityChange > sanityBarBottom.getSize().x))
         sanityBarTop.setSize(sf::Vector2f(sanityBarTop.getSize().x + sanityChange, sanityBarTop.getSize().y));
+}
+
+void GameUI::setBreathBar(int breathChange) {
+    if (!(breathBarTop.getSize().x + breathChange < 0) && !(breathBarTop.getSize().x + breathChange > breathBarBottom.getSize().x))
+        breathBarTop.setSize(sf::Vector2f(breathBarTop.getSize().x + breathChange, breathBarTop.getSize().y));
+}
+
+void GameUI::setHealthBar(int healthChange) {
+    if (!(healthBarTop.getSize().x + healthChange < 0) && !(healthBarTop.getSize().x + healthChange > healthBarBottom.getSize().x))
+        healthBarTop.setSize(sf::Vector2f(healthBarTop.getSize().x + healthChange, healthBarTop.getSize().y)); 
 }
 
 void GameUI::setOverHideable(bool over) {
@@ -103,12 +142,17 @@ void GameUI::setStatusHiding(bool hiding) {
     isHiding = hiding;
 }
 
+void GameUI::setDisplayBreathBar(bool display) {
+    renderBreathBar = display;
+}
+
 // constructor
 GameUI::GameUI() {
     initVars();
     initFont();
     drawHealthBar();
     drawSanityBar();
+    drawBreathBar();
     drawStatusTexts();
 }
 
@@ -127,4 +171,9 @@ void GameUI::renderUI(sf::RenderTarget& target) {
         target.draw(statusHidingText);
     if (renderHideableText)
         target.draw(overHideableText);
+    if (renderBreathBar) {
+        target.draw(breathBarBottom);
+        target.draw(breathBarTop);
+        target.draw(breathBarText);
+    }
 }

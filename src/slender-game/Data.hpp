@@ -20,7 +20,7 @@ namespace DataSettings {
     inline const int numFallenTrees = 80;
     inline const int numRocks = 1000;
     inline const int numMudPatches = 10;
-    inline const int numBushes = 50;
+    inline const int numBushes = 30;
     inline const int numShrubs = 500;
 
 

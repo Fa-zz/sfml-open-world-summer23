@@ -15,8 +15,14 @@ void Engine::initVars() {
     playerSkinTone = CustomColors::skinTone;
     playerNewPosition = sf::Vector2f(0,0);
     meditateActivated = 0;
+    hidingActivated = false;
+    leftHiding = false;
     flashlightOn = true;
     overHideable = false;
+    statusStill = false; 
+    statusWalking = false;
+    statusRunning = false;
+    outOfBreath = false;
 }
 
 void Engine::initLight() {
@@ -220,8 +226,8 @@ void Engine::modifySpeedIfObstacles() {
 
 // TODO: move player collision stuff to its own function
 void Engine::updatePlayer() {
-    gameUIPtr->setStatusMeditating(false);
     // std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
+    statusStill, statusWalking, statusRunning = false;
     playerMovement = sf::Vector2f(0,0);
 
     playerSpeedModifier = 1;
@@ -229,6 +235,7 @@ void Engine::updatePlayer() {
         playerSpeedModifier = 0;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
         playerSpeedModifier = 2;
+        statusRunning = true;
     }
 
     // Adjust speed given obstacles
@@ -237,6 +244,25 @@ void Engine::updatePlayer() {
     }
 
     handlePlayerMovement(playerSpeedModifier);
+
+    // If player does not move, player is still
+    if (playerMovement.x == 0 && playerMovement.y == 0) {
+        playerSpeedModifier = 0;
+    } else if (playerSpeedModifier >= 0.5 && playerSpeedModifier <= 1) {
+        statusStill = false;
+        statusWalking = true;
+        statusRunning = false;
+    } else {
+        statusStill = false;
+        statusWalking = false;
+        statusRunning = true;
+    }
+    if (playerSpeedModifier == 0) {
+        statusStill = true;
+        statusWalking = false;
+        statusRunning = false;
+    }
+
 
     // Checking if player collides with gameArea or other objects
     playerNewPosition = player.getPosition() + playerMovement;
@@ -251,23 +277,54 @@ void Engine::updatePlayer() {
             playerOutOfBoundsAdjust();
         }
     }
-    // std::cout << "Player object collision func: " << playerObjectCollision(newPlayer) << std::endl;
+    
+    handleBreath();
+    std::cout << "Statusstill: " << statusStill << " Statuswalking: " << statusWalking << " Statusrunning: " << statusRunning << std::endl; 
 }
 
 void Engine::updateSanity(bool isMeditating) {
     if (!isMeditating) {
+        gameUIPtr->setStatusMeditating(false);
         if (sanityTimer > 3) {
             gameUIPtr->setSanityBar(-6);
             sanityTimer = 0;
         }
     } else {
         gameUIPtr->setStatusMeditating(true);
-        if (sanityTimer > 6) {
+        if (sanityTimer > 4) {
             gameUIPtr->setSanityBar(6);
             sanityTimer = 0;
         }
     }        
+}
 
+void Engine::handleBreath() {
+    float breathCurrent = gameUIPtr->getBarCurrent("breath").x;
+    float breathMax = gameUIPtr->getBarCurrent("breath").y;
+    // std::cout << "breath current: " << breathCurrent << " breath max: " << breathMax << std::endl;
+
+    if (statusRunning || (hidingActivated && hideable == 2) || breathCurrent < breathMax) {
+        gameUIPtr->setDisplayBreathBar(true);
+        isBreathing = true;
+        if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent && breathTimer > 1) {
+            gameUIPtr->setBreathBar(-30);
+            breathTimer = 0;
+
+        } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent) && breathTimer > 3) {
+            gameUIPtr->setHealthBar(-12);
+            breathTimer = 0;
+
+        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax && breathTimer > 4 ) {
+            gameUIPtr->setBreathBar(12);
+            breathTimer = 0;
+            
+        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax && breathTimer > 2) {
+            gameUIPtr->setBreathBar(30);
+            breathTimer = 0;
+        }
+    } else {
+        gameUIPtr->setDisplayBreathBar(false);
+    }
 }
 
 void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable) {
@@ -277,6 +334,10 @@ void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable)
     if (!hidingActivated) {
         gameUIPtr->setStatusHiding(false);
         player.setFillColor(playerSkinTone);
+        if (leftHiding) {
+            flashlightOn = true;
+            leftHiding = false;
+        }
     }
 
     if (!hidingActivated && overHideable) {
@@ -285,10 +346,14 @@ void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable)
     }
     
     if (hidingActivated) {
+        // if (hideable == 2) {  // if hiding in mud, display breath + update breath
+        //     handleBreath();
+        // }
         gameUIPtr->setOverHideable(false);
         gameUIPtr->setStatusHiding(true);
         player.setFillColor(CustomColors::invisible);
         flashlightOn = false;
+        leftHiding = true;
     }
 }
 
@@ -306,7 +371,7 @@ void Engine::update() {
 
     lightPtr->setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
 
-    if (!(flashlightOn)) {
+    if (!flashlightOn) {
         lightPtr->setFade(true);
         lightPtr->setRange(DataSettings::lightRangeOff);
     } else {
@@ -324,12 +389,13 @@ void Engine::update() {
     ss << fps.getFPS();
     currentTime = clock.restart().asSeconds();
     sanityTimer += currentTime;
-    std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << std::endl;
+    if (isBreathing)
+        breathTimer += currentTime;
 
     updateUI();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
-
+    std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << std::endl;
 }
 
 // RENDER FUNCTIONS

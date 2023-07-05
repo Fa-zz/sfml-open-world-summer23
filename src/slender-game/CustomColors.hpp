@@ -20,6 +20,7 @@ namespace CustomColors {
     inline const sf::Color rockColor6(102,106,108);
 
     inline const sf::Color mudColor(116,86,68);
+    inline const sf::Color breathBarColor(253,255,246);
 
     inline const sf::Color bushColor(16,59,29);
 

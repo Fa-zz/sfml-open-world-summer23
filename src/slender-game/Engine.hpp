@@ -38,8 +38,8 @@ private:
     // float viewSpeed;
     sf::Clock clock;
     float currentTime;
-    // float sanityHealTimer;
     float sanityTimer;
+    float breathTimer;
     FPS fps;
 
     // Light
@@ -64,6 +64,10 @@ private:
     bool overHideable;
     int hideable;               // Where 1 is bush, 2 is mud
     bool hidingActivated;
+    bool isBreathing;
+    bool leftHiding;
+    bool statusRunning, statusWalking, statusStill;
+    bool outOfBreath;
 
     // Init functions
     void initWindow();
@@ -97,6 +101,7 @@ public:
     void handlePlayerMovement(float modifier);
 
     void updateSanity(bool isMeditating);
+    void handleBreath();
     void updateHiding(bool hidingActivated, bool overHideable, int hideable);
     void updateUI();
 
