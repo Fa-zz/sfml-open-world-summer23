@@ -103,6 +103,8 @@ void GameUI::drawStatusTexts() {
     statusActivityLevelText.setPosition(100.f, 450.f);
 }
 
+// 120, 140 to draw tools
+
 void GameUI::drawBatteryText() {
     batteryText.setCharacterSize(50);
     batteryText.setPosition(1525.f,1020.f);

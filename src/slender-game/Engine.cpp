@@ -243,8 +243,8 @@ void Engine::updateSanity(bool isMeditating) {
         }
     } else {
         gameUIPtr->setStatusMeditating(true);
-        if (sanityTimer > 3) {
-            gameUIPtr->setSanityBar(12);
+        if (sanityTimer > 4) {
+            gameUIPtr->setSanityBar(15);
             sanityTimer = 0;
         }
     }        
@@ -258,22 +258,26 @@ void Engine::handleBreath() {
     if (statusRunning || (hidingActivated && hideable == 2) || breathCurrent < breathMax) {
         gameUIPtr->setDisplayBreathBar(true);
         isBreathing = true;
-        if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent && breathTimer > 1) {
-            gameUIPtr->setBreathBar(-30);
-            breathTimer = 0;
-
-        } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent) && breathTimer > 3) {
-            gameUIPtr->setHealthBar(-12);
-            breathTimer = 0;
-
-        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax && breathTimer > 4 ) {
-            gameUIPtr->setBreathBar(12);
-            breathTimer = 0;
-
-        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax && breathTimer > 2) {
-            gameUIPtr->setBreathBar(30);
-            breathTimer = 0;
-
+        if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent) {
+            if (breathTimer > 1) {
+                gameUIPtr->setBreathBar(-30);
+                breathTimer = 0;
+            }
+        } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent)) {
+            if (breathTimer > 3) {
+                gameUIPtr->setHealthBar(-12);
+                breathTimer = 0;
+            }
+        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax) {
+            if (breathTimer > 4) {
+                gameUIPtr->setBreathBar(12);
+                breathTimer = 0;
+            }
+        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax) {
+            if (breathTimer > 2) {
+                gameUIPtr->setBreathBar(30);
+                breathTimer = 0;
+            }
         }
     } else if (breathCurrent == breathMax) {
         isBreathing = false;
@@ -419,7 +423,8 @@ void Engine::update() {
     ss << fps.getFPS();
     currentTime = clock.restart().asSeconds();
     sanityTimer += currentTime;
-    flashlightBatteryTimer += currentTime;
+    if (flashlightOn)
+        flashlightBatteryTimer += currentTime;
     if (isBreathing) {
         breathTimer += currentTime;
     } else {
