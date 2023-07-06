@@ -25,6 +25,9 @@ void Engine::initVars() {
     breathTimer = 0;
     flashlightBatteryTimer = 0;
     overRock = false;
+    overItem = false;
+    highlightedIter = -1;
+    itemType = "";
 }
 
 void Engine::initLight() {
@@ -172,7 +175,7 @@ bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
     return false;
 }
 
-void Engine::handlePlayerMovement(float modifier) {
+void Engine::updatePlayerMovement(float modifier) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
         playerMovement.y -= playerMoveSpeed*modifier;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
@@ -181,6 +184,34 @@ void Engine::handlePlayerMovement(float modifier) {
         playerMovement.x -= playerMoveSpeed*modifier;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
         playerMovement.x += playerMoveSpeed*modifier;
+}
+
+void Engine::updateItem() {
+    overItem = false;
+    for (auto iter = 0; iter < gameWorldPtr->batteriesVector.size(); ++iter) {
+        if (player.getGlobalBounds().intersects(gameWorldPtr->batteriesVector[iter].getGlobalBounds())) {
+            gameWorldPtr->batteriesVector[iter].setOutlineColor(sf::Color::Yellow);
+            gameWorldPtr->batteriesVector[iter].setOutlineThickness(5.f);
+            highlightedIter = iter;
+            overItem = true;
+            itemType = "battery";
+            break;
+        } 
+    }
+
+    if (overItem) {
+        gameUIPtr->setOverItem(true);
+        gameUIPtr->drawOverItemText(itemType);
+    }
+
+    if (!(overItem)) {
+        gameUIPtr->setOverItem(false);
+        if (highlightedIter != -1) {
+            if (itemType == "battery")
+                gameWorldPtr->batteriesVector[highlightedIter].setOutlineThickness(0.f);
+            highlightedIter = -1;
+        }
+    } 
 }
 
 void Engine::modifySpeedIfObstacles() {
@@ -327,7 +358,7 @@ void Engine::updatePlayer() {
         modifySpeedIfObstacles();
     }
 
-    handlePlayerMovement(playerSpeedModifier);
+    updatePlayerMovement(playerSpeedModifier);
 
     // If player does not move, player is still
     if (playerMovement.x == 0 && playerMovement.y == 0) {
@@ -361,7 +392,6 @@ void Engine::updatePlayer() {
         }
     }
     
-    handleBreath();
     std::cout << "Statusstill: " << statusStill << " Statuswalking: " << statusWalking << " Statusrunning: " << statusRunning << std::endl; 
 }
 
@@ -408,6 +438,7 @@ void Engine::update() {
 
     pollEvents();
     updatePlayer();
+    handleBreath();
 
     fps.update();
     std::ostringstream ss;
@@ -424,6 +455,7 @@ void Engine::update() {
 
     updateUI();
     updateLight();
+    updateItem();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
     std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << std::endl;

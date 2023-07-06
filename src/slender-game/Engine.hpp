@@ -72,6 +72,10 @@ private:
     bool statusRunning, statusWalking, statusStill;
     bool outOfBreath;
 
+    bool overItem;
+    int highlightedIter;
+    std::string itemType;
+
     // Init functions
     void initWindow();
     void initVars();
@@ -99,8 +103,9 @@ public:
     void playerActionsMeditate();
     void playerOutOfBoundsAdjust();
     bool playerObjectCollision(sf::CircleShape& playerArg);
+    void updateItem();
     void modifySpeedIfObstacles();
-    void handlePlayerMovement(float modifier);
+    void updatePlayerMovement(float modifier);
 
     void updateSanity(bool isMeditating);
     void handleBreath();

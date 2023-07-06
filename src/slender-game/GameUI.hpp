@@ -24,12 +24,14 @@ private:
 
     // Status texts
     sf::Text overHideableText;
+    sf::Text overItemText;
 
     sf::Text statusMeditatingText;
     sf::Text statusHidingText;
 
     sf::Text statusActivityLevelText;
 
+    // BAR VARS
     float barSizeDefaultX, barSizeDefaultY;
     // Health bar var
     sf::RectangleShape healthBarTop;
@@ -46,11 +48,13 @@ private:
     // Meditating, hiding, still, holding breath
     bool isMeditating, isHiding;
     bool overHideable;
+    bool overItem;
     bool renderHideableText;
     bool renderBreathBar;
 
 public:
     void drawOverHideableText(int hideable);
+    void drawOverItemText(std::string itemType);
     void drawHealthBar();
     void drawSanityBar();
     void drawBreathBar();
@@ -64,6 +68,7 @@ public:
     void setStatusMeditating(bool meditating);
 
     void setOverHideable(bool over);
+    void setOverItem(bool over);
     void setStatusHiding(bool hiding);
 
     void setBreathBar(int breathChange);

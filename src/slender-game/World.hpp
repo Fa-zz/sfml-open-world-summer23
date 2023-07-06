@@ -20,7 +20,13 @@ private:
     void generateMudPatches();
     void generateBushes();
     void generateShrubs();
-    //void populateWorld();
+
+    // Generate item function
+    void generateAllItems();
+    void itemPosCheck(sf::CircleShape &item, std::vector<sf::CircleShape> &itemsVector);
+
+    void generateWorld();
+
 public:
     // Variables
     sf::Vector2f m_gameAreaSize;
@@ -39,9 +45,11 @@ public:
     std::vector<sf::CircleShape> bushesVector;
     std::vector<sf::CircleShape> shrubsVector;
 
+    // Items
+    std::vector<sf::CircleShape> batteriesVector;
+
     // Constructor / destructor
     World();
-    virtual ~World();
 
     // Render functions
     void render(sf::RenderTarget& target);

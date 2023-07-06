@@ -22,6 +22,7 @@ void GameUI::initFont() {
         overHideableText.setFont(font);
         statusActivityLevelText.setFont(font);
         batteryText.setFont(font);
+        overItemText.setFont(font);
     }
 }
 
@@ -82,6 +83,13 @@ void GameUI::drawOverHideableText(int hideable) {
 
     overHideableText.setCharacterSize(25);
     overHideableText.setPosition(1550,310);
+}
+
+void GameUI::drawOverItemText(std::string itemType) {
+    overItemText.setString("There is a " + itemType + " here.\n Press E to use.");
+
+    overItemText.setCharacterSize(25);
+    overItemText.setPosition(1550,350);
 }
 
 void GameUI::drawStatusTexts() {
@@ -150,6 +158,10 @@ void GameUI::setOverHideable(bool over) {
     renderHideableText = over;
 }
 
+void GameUI::setOverItem(bool over) {
+    overItem = over;
+}
+
 void GameUI::setStatusMeditating(bool meditating) {
     isMeditating = meditating;
 }
@@ -198,6 +210,8 @@ void GameUI::renderUI(sf::RenderTarget& target) {
     target.draw(statusActivityLevelText);
     if (renderHideableText)
         target.draw(overHideableText);
+    if (overItem)
+        target.draw(overItemText);
     if (renderBreathBar) {
         target.draw(breathBarBottom);
         target.draw(breathBarTop);

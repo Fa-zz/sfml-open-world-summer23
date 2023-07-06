@@ -176,7 +176,6 @@ void World::generateMudPatches() {
 
         if (!intersects)
         {
-            std::cout << "mud patch pushed back, coords: " << mudPatch.getPosition().x << " " << mudPatch.getPosition().y << std::endl;
             mudPatchesVector.push_back(mudPatch);
         }
     }
@@ -269,22 +268,58 @@ void World::generateShrubs() {
 
 }
 
+void World::generateAllItems() {
+    while (batteriesVector.size() < DataSettings::numBatteries) {
+        sf::CircleShape battery(15.f, 4);
+        battery.setFillColor(sf::Color::Blue);
+        itemPosCheck(battery, batteriesVector);
+        std::cout << "battery x: " << battery.getPosition().x << " battery y: " << battery.getPosition().y << std::endl;
+    }
+}
 
-// CONSTRUCTOR / DESTRUCTOR
-World::World() {
-    srand(time(0));
+void World::itemPosCheck(sf::CircleShape &item, std::vector<sf::CircleShape> &itemsVector) {
+    float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
+    float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
+
+    item.setPosition(x, y);
+    bool intersects = std::any_of(itemsVector.begin(), itemsVector.end(), [&](const sf::CircleShape& existingItem) {
+        return checkIntersection(item, existingItem);
+    });
+    intersects = intersects || std::any_of(treesVector.begin(), treesVector.end(), [&](const sf::CircleShape& existingTree) {
+        return checkIntersection(item, existingTree);
+    });
+    intersects = intersects || std::any_of(fallenTreesVector.begin(), fallenTreesVector.end(), [&](const sf::RectangleShape& existingFallenTree) {
+        return checkIntersection(item, existingFallenTree);
+    });
+
+    if (!intersects)
+    {
+        itemsVector.push_back(item);
+    }
+
+
+}
+
+void World::generateWorld() {
     generateTrees();
     generateRocks();
     generateMudPatches();
     generateBushes();
     generateShrubs();
+
+    generateAllItems();
 }
 
-World::~World() {
-    
+
+// CONSTRUCTOR / DESTRUCTOR
+World::World() {
+    srand(time(0));
+    generateWorld();
 }
 
 void World::render(sf::RenderTarget& target) {
+    // RENDER OBJECTS & ITEMS
+
     for (auto iter = 0; iter < mudPatchesVector.size(); ++iter) {
         target.draw(mudPatchesVector[iter]);
     }
@@ -300,6 +335,11 @@ void World::render(sf::RenderTarget& target) {
     for (auto iter = 0; iter < bushesVector.size(); ++iter) {
         target.draw(bushesVector[iter]);
     }
+
+    for (auto iter = 0; iter < batteriesVector.size(); ++iter) {
+        target.draw(batteriesVector[iter]);
+    }
+
     for (auto iter = 0; iter < shrubsVector.size(); ++iter) {
         target.draw(shrubsVector[iter]);
     }

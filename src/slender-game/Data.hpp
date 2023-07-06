@@ -9,18 +9,23 @@ namespace DataSettings {
     inline const float gameWorldSizeX = 12000.f;
     inline const float gameWorldSizeY = 12000.f;
 
-    inline const float playerMoveSpeedWalk = 2.0f;
+    inline const float playerMoveSpeedWalk = 1.5f;
     inline const float playerRadiusDefault = 25.f;
 
     inline const float lightRangeFull = 600.f;
     inline const float lightRangeOff = 200.f;
 
-    inline const int numTrees = 1000;
-    inline const int numFallenTrees = 90;
+
+    // GENERATING OBJECTS DATA
+    inline const int numTrees = 900;
+    inline const int numFallenTrees = 70;
     inline const int numRocks = 2000;
     inline const int numMudPatches = 10;
     inline const int numBushes = 30;
     inline const int numShrubs = 700;
+
+    // GENERATING ITEMS DATA
+    inline const int numBatteries = 70;
 
 }
 
