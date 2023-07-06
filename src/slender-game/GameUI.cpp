@@ -135,6 +135,8 @@ void GameUI::setSanityBar(int sanityChange) {
 
     if (sanityBarTop.getSize().x + sanityChange > sanityBarBottom.getSize().x)
         sanityBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
+    if (sanityBarTop.getSize().x + sanityChange < 0)
+        sanityBarTop.setSize(sf::Vector2f(0, barSizeDefaultY));
 }
 
 void GameUI::setBreathBar(int breathChange) {
@@ -143,6 +145,8 @@ void GameUI::setBreathBar(int breathChange) {
     
     if (breathBarTop.getSize().x + breathChange > breathBarBottom.getSize().x)
         breathBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
+    if (breathBarTop.getSize().x + breathChange < 0)
+        breathBarTop.setSize(sf::Vector2f(0, barSizeDefaultY));
 }
 
 void GameUI::setHealthBar(int healthChange) {
@@ -151,6 +155,8 @@ void GameUI::setHealthBar(int healthChange) {
 
     if (healthBarTop.getSize().x + healthChange > healthBarBottom.getSize().x)
         healthBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
+    if (healthBarTop.getSize().x + healthChange < 0)
+        healthBarTop.setSize(sf::Vector2f(0, barSizeDefaultY));
 
 }
 

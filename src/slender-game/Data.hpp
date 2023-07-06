@@ -17,15 +17,15 @@ namespace DataSettings {
 
 
     // GENERATING OBJECTS DATA
-    inline const int numTrees = 900;
-    inline const int numFallenTrees = 70;
-    inline const int numRocks = 2000;
+    inline const int numTrees = 800;
+    inline const int numFallenTrees = 60;
+    inline const int numRocks = 1000;
     inline const int numMudPatches = 10;
     inline const int numBushes = 30;
     inline const int numShrubs = 700;
 
     // GENERATING ITEMS DATA
-    inline const int numBatteries = 70;
+    inline const int numBatteries = 20;
 
 }
 

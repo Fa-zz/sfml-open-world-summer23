@@ -73,6 +73,7 @@ private:
     bool outOfBreath;
 
     bool overItem;
+    bool useItem;
     int highlightedIter;
     std::string itemType;
 

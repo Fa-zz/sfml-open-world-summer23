@@ -26,6 +26,7 @@ void Engine::initVars() {
     flashlightBatteryTimer = 0;
     overRock = false;
     overItem = false;
+    useItem = false;
     highlightedIter = -1;
     itemType = "";
 }
@@ -119,15 +120,18 @@ void Engine::pollEvents() {
             std::cout << "WINDOW CLOSED, ESCAPE" << std::endl;
             window->close();
         }
-        if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::M) {
-            meditateActivated = (!meditateActivated);
-        }
         if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Num1) {
             flashlightOn = (!flashlightOn);
             std::cout << "flashlighton: " << flashlightOn << std::endl;
         }
+        if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::M) {
+            meditateActivated = (!meditateActivated);
+        }
         if ((overHideable) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Q) {
             hidingActivated = (!hidingActivated);
+        }
+        if ((overItem) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::E) {
+            useItem = (!useItem);
         }
     }
 }
@@ -199,9 +203,19 @@ void Engine::updateItem() {
         } 
     }
 
-    if (overItem) {
+    if (overItem && (!useItem)) {
         gameUIPtr->setOverItem(true);
         gameUIPtr->drawOverItemText(itemType);
+    } else if (overItem && useItem && itemType == "battery") {
+        // TODO: update "log text" every time you've used an item.
+        if ((flashlightBattery + 5) > 100 ) {
+            flashlightBattery = 100;
+        } else {
+            flashlightBattery += 5;
+        }
+        flashlightBatteryTimer = 0.f;
+        gameWorldPtr->batteriesVector.erase(gameWorldPtr->batteriesVector.begin() + highlightedIter);
+        useItem = false;
     }
 
     if (!(overItem)) {
