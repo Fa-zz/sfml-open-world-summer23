@@ -8,6 +8,7 @@ void GameUI::initVars() {
     bool overHideable = false;
     bool renderHideableText = false;
     bool renderBreathBar = false;
+    bool displayToLog = false;
 }
 
 void GameUI::initFont() {
@@ -23,6 +24,7 @@ void GameUI::initFont() {
         statusActivityLevelText.setFont(font);
         batteryText.setFont(font);
         overItemText.setFont(font);
+        logText.setFont(font);
     }
 }
 
@@ -60,18 +62,18 @@ void GameUI::drawSanityBar() {
 
 void GameUI::drawBreathBar() {
     breathBarTop.setSize(sf::Vector2f(barSizeDefaultX,barSizeDefaultY));
-    breathBarTop.setPosition(sf::Vector2f(50.f,60.f));  // 1550.f,220.f
+    breathBarTop.setPosition(sf::Vector2f(50.f,150.f));  // 1550.f,220.f
     breathBarTop.setFillColor(CustomColors::breathBarColor);
 
     breathBarBottom.setSize(sf::Vector2f(barSizeDefaultX,barSizeDefaultY));
-    breathBarBottom.setPosition(sf::Vector2f(50.f,60.f));
+    breathBarBottom.setPosition(sf::Vector2f(50.f,150.f));
     breathBarBottom.setFillColor(sf::Color::Red);
     breathBarBottom.setOutlineColor(sf::Color::Black);
     breathBarBottom.setOutlineThickness(5.f);
 
     breathBarText.setString("Breath");
     breathBarText.setCharacterSize(30);
-    breathBarText.setPosition(100.f,20.f);  // 1600.f,180.f
+    breathBarText.setPosition(100.f,110.f);  // 1600.f,180.f
 }
 
 void GameUI::drawOverHideableText(int hideable) {
@@ -95,14 +97,14 @@ void GameUI::drawOverItemText(std::string itemType) {
 void GameUI::drawStatusTexts() {
     statusMeditatingText.setString("Meditating");
     statusMeditatingText.setCharacterSize(40);
-    statusMeditatingText.setPosition(100.f,750.f);
+    statusMeditatingText.setPosition(100.f,350.f);
 
     statusHidingText.setString("Hiding");
     statusHidingText.setCharacterSize(40);
-    statusHidingText.setPosition(100.f,600.f);
+    statusHidingText.setPosition(100.f,450.f);
 
     statusActivityLevelText.setCharacterSize(40);
-    statusActivityLevelText.setPosition(100.f, 450.f);
+    statusActivityLevelText.setPosition(100.f, 550.f);
 }
 
 // 120, 140 to draw tools
@@ -110,6 +112,11 @@ void GameUI::drawStatusTexts() {
 void GameUI::drawBatteryText() {
     batteryText.setCharacterSize(50);
     batteryText.setPosition(1525.f,1020.f);
+}
+
+void GameUI::drawLogText() {
+    logText.setCharacterSize(30);
+    logText.setPosition(0.f,30.f);
 }
 
 //TODO: Change to general bar x and y
@@ -189,6 +196,12 @@ void GameUI::setBattery(std::string battery, sf::Color color) {
     batteryText.setColor(color);
 }
 
+void GameUI::setLogMessage(bool display, std::string message, sf::Color color){
+    displayToLog = display;
+    logText.setString(message);
+    logText.setColor(color);
+}
+
 // constructor
 GameUI::GameUI() {
     initVars();
@@ -198,6 +211,7 @@ GameUI::GameUI() {
     drawBreathBar();
     drawStatusTexts();
     drawBatteryText();
+    drawLogText();
 }
 
 void GameUI::renderUI(sf::RenderTarget& target) {
@@ -224,4 +238,6 @@ void GameUI::renderUI(sf::RenderTarget& target) {
         target.draw(breathBarText);
     }
     target.draw(batteryText);
+    if (displayToLog)
+        target.draw(logText);
 }

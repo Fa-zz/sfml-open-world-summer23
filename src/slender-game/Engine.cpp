@@ -5,7 +5,7 @@ void Engine::initWindow() {
     window = new sf::RenderWindow(sf::VideoMode(DataSettings::videoModeWidth,DataSettings::videoModeHeight), "Forest of Shapes", sf::Style::Default | sf::Style::Close);
     window->setFramerateLimit(DataSettings::frameRateLimit);
     window->setVerticalSyncEnabled(false);
-    window->setFramerateLimit(150);
+    window->setFramerateLimit(100);
 }
 
 void Engine::initVars() {
@@ -29,6 +29,7 @@ void Engine::initVars() {
     useItem = false;
     highlightedIter = -1;
     itemType = "";
+    logTimer = 0;
 }
 
 void Engine::initLight() {
@@ -122,7 +123,6 @@ void Engine::pollEvents() {
         }
         if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Num1) {
             flashlightOn = (!flashlightOn);
-            std::cout << "flashlighton: " << flashlightOn << std::endl;
         }
         if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::M) {
             meditateActivated = (!meditateActivated);
@@ -214,6 +214,7 @@ void Engine::updateItem() {
             flashlightBattery += 5;
         }
         flashlightBatteryTimer = 0.f;
+        logMessages.push_back(DataSettings::useBatteryString);
         gameWorldPtr->batteriesVector.erase(gameWorldPtr->batteriesVector.begin() + highlightedIter);
         useItem = false;
     }
@@ -409,10 +410,24 @@ void Engine::updatePlayer() {
     std::cout << "Statusstill: " << statusStill << " Statuswalking: " << statusWalking << " Statusrunning: " << statusRunning << std::endl; 
 }
 
+void Engine::updateLog() {
+    if (logMessages.size()) {
+        gameUIPtr->setLogMessage(true, logMessages[0]);
+        if (logTimer > 5.f) {
+            logMessages.erase(logMessages.begin());
+            logTimer = 0;
+        }
+    } else {
+        gameUIPtr->setLogMessage(false, "");
+        logTimer = 0;
+    }
+}
+
 void Engine::updateUI() {
     updateSanity(meditateActivated);
     updateHiding(hidingActivated, overHideable, hideable);
     updateUIActivityLevel(statusStill, statusWalking, statusRunning);
+    updateLog();
 }
 
 void Engine::updateLight() {
@@ -466,13 +481,15 @@ void Engine::update() {
     } else {
         breathTimer = 0;
     }
+    if (logMessages.size() > 0)
+        logTimer += currentTime;
 
     updateUI();
     updateLight();
     updateItem();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
-    std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << std::endl;
+    std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " logTimer: " << logTimer << std::endl;
 }
 
 // RENDER FUNCTIONS

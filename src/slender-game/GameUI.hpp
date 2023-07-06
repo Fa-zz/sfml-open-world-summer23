@@ -21,6 +21,7 @@ private:
     sf::Text sanityBarText;
     sf::Text breathBarText;
     sf::Text batteryText;
+    sf::Text logText;
 
     // Status texts
     sf::Text overHideableText;
@@ -52,6 +53,9 @@ private:
     bool renderHideableText;
     bool renderBreathBar;
 
+    // Log
+    bool displayToLog;
+
 public:
     void drawOverHideableText(int hideable);
     void drawOverItemText(std::string itemType);
@@ -59,8 +63,8 @@ public:
     void drawSanityBar();
     void drawBreathBar();
     void drawStatusTexts();
-
     void drawBatteryText();
+    void drawLogText();
 
     sf::Vector2f getBarCurrent(std::string bar);
 
@@ -79,6 +83,8 @@ public:
     void setHealthBar(int healthChange);
 
     void setBattery(std::string battery, sf::Color color);
+
+    void setLogMessage(bool display, std::string message, sf::Color color=sf::Color::White);
 
     GameUI();
 

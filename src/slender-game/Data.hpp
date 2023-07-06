@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 namespace DataSettings {
     // ENGINE DATA
     inline const float videoModeWidth = 1920;
@@ -9,7 +11,7 @@ namespace DataSettings {
     inline const float gameWorldSizeX = 12000.f;
     inline const float gameWorldSizeY = 12000.f;
 
-    inline const float playerMoveSpeedWalk = 1.5f;
+    inline const float playerMoveSpeedWalk = 2.f;
     inline const float playerRadiusDefault = 25.f;
 
     inline const float lightRangeFull = 600.f;
@@ -17,26 +19,16 @@ namespace DataSettings {
 
 
     // GENERATING OBJECTS DATA
-    inline const int numTrees = 800;
-    inline const int numFallenTrees = 60;
-    inline const int numRocks = 1000;
+    inline const int numTrees = 900;
+    inline const int numFallenTrees = 70;
+    inline const int numRocks = 2000;
     inline const int numMudPatches = 10;
     inline const int numBushes = 30;
-    inline const int numShrubs = 700;
+    inline const int numShrubs = 800;
 
     // GENERATING ITEMS DATA
     inline const int numBatteries = 20;
 
+    // MESSAGE LOG DATA
+    inline const std::string useBatteryString = "You use the battery, and your flashlight flickers more strongly.";
 }
-
-class Data {
-private:
-    int playerSanity;
-
-    // Init functions
-    void initPlayerData();
-public:
-    Data();
-    int getPlayerSanity();
-    void setPlayerSanity(int newSanity);
-};

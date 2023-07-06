@@ -55,6 +55,8 @@ private:
 
     // Game UI
     GameUI* gameUIPtr;
+    std::vector<std::string> logMessages;
+    float logTimer;
 
     // World
     World* gameWorldPtr;
@@ -113,6 +115,7 @@ public:
     void updateHiding(bool hidingActivated, bool overHideable, int hideable);
     void updateUIActivityLevel(bool statusStill, bool statusWalking, bool statusRunning);
     void updatePlayer();
+    void updateLog();
     void updateUI();
     void updateLight();
 
