@@ -33,6 +33,8 @@ void Engine::initLight() {
     currentLightRange = DataSettings::lightRangeFull;
     lightPtr->setRange(currentLightRange);
     lightPtr->setFade(false);
+    lightPtr->setIntensity(0.5);
+
 
     float fogRenderOffset = gameAreaSize.x / 10;
     fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-fogRenderOffset,-fogRenderOffset), sf::Vector2f(gameAreaSize.x+(fogRenderOffset*2), gameAreaSize.y+(fogRenderOffset*2)));
@@ -123,24 +125,6 @@ void Engine::pollEvents() {
         }
         if ((overHideable) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Q) {
             hidingActivated = (!hidingActivated);
-        }
-    }
-}
-
-void Engine::updateMousePos() {
-    mousePosWindow = sf::Mouse::getPosition(*window);
-    mousePosView = window->mapPixelToCoords(mousePosWindow);
-    std::cout << "Mouse coords: " << mousePosView.x << " " << mousePosView.y << std::endl;
-}
-
-void Engine::updateMouse() {
-    visibleToPlayer.setRadius(DataSettings::playerRadiusDefault);
-    visibleToPlayer.setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
-    visibleToPlayer.setFillColor(CustomColors::invisible);  // Ironic
-    
-    for (auto iter = 0; iter < gameWorldPtr->mudPatchesVector.size(); ++iter) {
-        if (gameWorldPtr->mudPatchesVector[iter].getGlobalBounds().contains(player.getPosition())) {
-            std::cout << "Over mud" << std::endl;
         }
     }
 }
@@ -397,26 +381,33 @@ void Engine::updateLight() {
     if (!flashlightOn) {
         lightPtr->setFade(true);
         lightPtr->setRange(DataSettings::lightRangeOff);
-    } else {
+    } else if (currentLightRange > 200.f) {
         lightPtr->setFade(false);
         lightPtr->setRange(currentLightRange);
         if (flashlightBatteryTimer > 5.f) {
             flashlightBattery -= 1;
             flashlightBatteryTimer = 0;
+            currentLightRange-=4.f;
         }
     }
 
+    std::cout << "lightPtr->getRange(): " << lightPtr->getRange() << std::endl;
+
     std::string flashlightBatteryString;
     flashlightBatteryString = std::to_string(flashlightBattery);
-    gameUIPtr->setBattery(flashlightBatteryString);
+    if (flashlightBattery > 75) {
+        gameUIPtr->setBattery(flashlightBatteryString, sf::Color::Green);
+    } else if (flashlightBattery >= 50 && flashlightBattery <= 75) {
+        gameUIPtr->setBattery(flashlightBatteryString, sf::Color::Yellow);
+    } else if (flashlightBattery > 1 && flashlightBattery <= 50) {
+        gameUIPtr->setBattery(flashlightBatteryString, sf::Color::Red);
+    }
 }
 
 void Engine::update() {
 
     pollEvents();
     updatePlayer();
-    updateMousePos();
-    updateMouse();
 
     fps.update();
     std::ostringstream ss;

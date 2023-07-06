@@ -30,6 +30,7 @@ private:
 
     sf::Text statusActivityLevelText;
 
+    float barSizeDefaultX, barSizeDefaultY;
     // Health bar var
     sf::RectangleShape healthBarTop;
     sf::RectangleShape healthBarBottom;
@@ -72,7 +73,7 @@ public:
 
     void setHealthBar(int healthChange);
 
-    void setBattery(std::string battery);
+    void setBattery(std::string battery, sf::Color color);
 
     GameUI();
 

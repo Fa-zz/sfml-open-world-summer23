@@ -15,12 +15,12 @@ namespace DataSettings {
     inline const float lightRangeFull = 600.f;
     inline const float lightRangeOff = 200.f;
 
-    inline const int numTrees = 900;
-    inline const int numFallenTrees = 80;
-    inline const int numRocks = 1000;
+    inline const int numTrees = 1000;
+    inline const int numFallenTrees = 90;
+    inline const int numRocks = 2000;
     inline const int numMudPatches = 10;
     inline const int numBushes = 30;
-    inline const int numShrubs = 500;
+    inline const int numShrubs = 700;
 
 }
 

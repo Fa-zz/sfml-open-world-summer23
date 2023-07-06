@@ -1,6 +1,8 @@
 #include "GameUI.hpp"
 
 void GameUI::initVars() {
+    barSizeDefaultX = 300.f;
+    barSizeDefaultY = 40.f;
     bool isMeditating = false;
     bool isHiding = false;
     bool overHideable = false;
@@ -24,17 +26,11 @@ void GameUI::initFont() {
 }
 
 void GameUI::drawHealthBar() {
-    // Player hitpoints = 100. So 1 hp damage = 3 px removed from health bar
-    // If I have 100 health, I should have a 300px bar as 100*3=300
-    // Similarly if I have 56 health, I should have 56*3 px bar
-    // Top bar's size will be modified
-    healthBarTop.setSize(sf::Vector2f(300.f,40.f));
+    healthBarTop.setSize(sf::Vector2f(barSizeDefaultX,barSizeDefaultY));
     healthBarTop.setPosition(sf::Vector2f(1550.f,60.f));
     healthBarTop.setFillColor(sf::Color::Green);
-    // healthBarTop.setOutlineColor(sf::Color::Black);
-    // healthBarTop.setOutlineThickness(5.f);
 
-    healthBarBottom.setSize(sf::Vector2f(300.f,40.f));
+    healthBarBottom.setSize(sf::Vector2f(barSizeDefaultX,barSizeDefaultY));
     healthBarBottom.setPosition(sf::Vector2f(1550.f,60.f));
     healthBarBottom.setFillColor(sf::Color::Red);
     healthBarBottom.setOutlineColor(sf::Color::Black);
@@ -46,37 +42,35 @@ void GameUI::drawHealthBar() {
 }
 
 void GameUI::drawSanityBar() {
-    sanityBarTop.setSize(sf::Vector2f(300.f,40.f));
-    sanityBarTop.setPosition(sf::Vector2f(50.f,60.f));
+    sanityBarTop.setSize(sf::Vector2f(barSizeDefaultX,barSizeDefaultY));
+    sanityBarTop.setPosition(sf::Vector2f(1550.f,220.f));
     sanityBarTop.setFillColor(sf::Color::Cyan);
-    // sanityBarTop.setOutlineColor(sf::Color::Black);
-    // sanityBarTop.setOutlineThickness(5.f);
 
-    sanityBarBottom.setSize(sf::Vector2f(300.f,40.f));
-    sanityBarBottom.setPosition(sf::Vector2f(50.f,60.f));
+    sanityBarBottom.setSize(sf::Vector2f(barSizeDefaultX,barSizeDefaultY));
+    sanityBarBottom.setPosition(sf::Vector2f(1550.f,220.f));  // 50.f,60.f
     sanityBarBottom.setFillColor(sf::Color::Red);
     sanityBarBottom.setOutlineColor(sf::Color::Black);
     sanityBarBottom.setOutlineThickness(5.f);
 
     sanityBarText.setString("Sanity");
     sanityBarText.setCharacterSize(40);
-    sanityBarText.setPosition(100.f,20.f);
+    sanityBarText.setPosition(1600.f,180.f); // 100.f,20.f
 }
 
 void GameUI::drawBreathBar() {
-    breathBarTop.setSize(sf::Vector2f(300.f,40.f));
-    breathBarTop.setPosition(sf::Vector2f(1550.f,220.f));
+    breathBarTop.setSize(sf::Vector2f(barSizeDefaultX,barSizeDefaultY));
+    breathBarTop.setPosition(sf::Vector2f(50.f,60.f));  // 1550.f,220.f
     breathBarTop.setFillColor(CustomColors::breathBarColor);
 
-    breathBarBottom.setSize(sf::Vector2f(300.f,40.f));
-    breathBarBottom.setPosition(sf::Vector2f(1550.f,220.f));
+    breathBarBottom.setSize(sf::Vector2f(barSizeDefaultX,barSizeDefaultY));
+    breathBarBottom.setPosition(sf::Vector2f(50.f,60.f));
     breathBarBottom.setFillColor(sf::Color::Red);
     breathBarBottom.setOutlineColor(sf::Color::Black);
     breathBarBottom.setOutlineThickness(5.f);
 
     breathBarText.setString("Breath");
     breathBarText.setCharacterSize(30);
-    breathBarText.setPosition(1600.f,180.f);
+    breathBarText.setPosition(100.f,20.f);  // 1600.f,180.f
 }
 
 void GameUI::drawOverHideableText(int hideable) {
@@ -130,16 +124,26 @@ sf::Vector2f GameUI::getBarCurrent(std::string bar) {
 void GameUI::setSanityBar(int sanityChange) {
     if (!(sanityBarTop.getSize().x + sanityChange < 0) && !(sanityBarTop.getSize().x + sanityChange > sanityBarBottom.getSize().x))
         sanityBarTop.setSize(sf::Vector2f(sanityBarTop.getSize().x + sanityChange, sanityBarTop.getSize().y));
+
+    if (sanityBarTop.getSize().x + sanityChange > sanityBarBottom.getSize().x)
+        sanityBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
 }
 
 void GameUI::setBreathBar(int breathChange) {
     if (!(breathBarTop.getSize().x + breathChange < 0) && !(breathBarTop.getSize().x + breathChange > breathBarBottom.getSize().x))
         breathBarTop.setSize(sf::Vector2f(breathBarTop.getSize().x + breathChange, breathBarTop.getSize().y));
+    
+    if (breathBarTop.getSize().x + breathChange > breathBarBottom.getSize().x)
+        breathBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
 }
 
 void GameUI::setHealthBar(int healthChange) {
     if (!(healthBarTop.getSize().x + healthChange < 0) && !(healthBarTop.getSize().x + healthChange > healthBarBottom.getSize().x))
         healthBarTop.setSize(sf::Vector2f(healthBarTop.getSize().x + healthChange, healthBarTop.getSize().y)); 
+
+    if (healthBarTop.getSize().x + healthChange > healthBarBottom.getSize().x)
+        healthBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
+
 }
 
 void GameUI::setOverHideable(bool over) {
@@ -162,8 +166,9 @@ void GameUI::setStatusActivityLevel(std::string level) {
     statusActivityLevelText.setString(level);
 }
 
-void GameUI::setBattery(std::string battery) {
+void GameUI::setBattery(std::string battery, sf::Color color) {
     batteryText.setString("Battery: " + battery + "%");
+    batteryText.setColor(color);
 }
 
 // constructor
