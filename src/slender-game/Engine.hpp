@@ -42,6 +42,8 @@ private:
     float sanityTimer;
     float breathTimer;
     float flashlightBatteryTimer;
+    sf::Time getElapsed;
+    float totalTime;
     FPS fps;
 
     // Light, battery

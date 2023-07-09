@@ -30,6 +30,7 @@ void Engine::initVars() {
     highlightedIter = -1;
     itemType = "";
     logTimer = 0;
+    totalTime = 0;
 }
 
 void Engine::initLight() {
@@ -311,6 +312,7 @@ void Engine::modifySpeedIfObstacles() {
 }
 
 void Engine::updateSanity(bool isMeditating) {
+    std::cout << "Curr sanity: " << UIPtr->getBarCurrent("sanity").x << std::endl;
     if (!isMeditating) {
         UIPtr->setStatusMeditating(false);
         if (sanityTimer > 3) {
@@ -455,7 +457,7 @@ void Engine::updatePlayer() {
         }
     }
     
-    std::cout << "Statusstill: " << statusStill << " Statuswalking: " << statusWalking << " Statusrunning: " << statusRunning << std::endl; 
+    // std::cout << "Statusstill: " << statusStill << " Statuswalking: " << statusWalking << " Statusrunning: " << statusRunning << std::endl; 
 }
 
 void Engine::updateLog() {
@@ -524,6 +526,8 @@ void Engine::update() {
     fps.update();
     std::ostringstream ss;
     ss << fps.getFPS();
+    getElapsed = clock.getElapsedTime();
+    totalTime += getElapsed.asSeconds();
     currentTime = clock.restart().asSeconds();
     sanityTimer += currentTime;
     if (flashlightOn)
@@ -542,7 +546,7 @@ void Engine::update() {
     updateAudio();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
-    std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " logTimer: " << logTimer << std::endl;
+    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " logTimer: " << logTimer << std::endl;
 }
 
 // RENDER FUNCTIONS
