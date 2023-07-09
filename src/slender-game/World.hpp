@@ -47,6 +47,8 @@ public:
 
     // Items
     std::vector<sf::CircleShape> batteriesVector;
+    std::vector<sf::CircleShape> holySymbolsVector;
+    std::vector<sf::CircleShape> mushroomsVector;
 
     // Constructor / destructor
     World();

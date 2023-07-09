@@ -91,7 +91,7 @@ void GameUI::drawOverItemText(std::string itemType) {
     overItemText.setString("There is a " + itemType + " here.\n Press E to use.");
 
     overItemText.setCharacterSize(25);
-    overItemText.setPosition(1550,350);
+    overItemText.setPosition(1500,350);
 }
 
 void GameUI::drawStatusTexts() {

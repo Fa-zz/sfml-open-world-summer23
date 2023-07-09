@@ -28,5 +28,8 @@ namespace CustomColors {
     inline const sf::Color shrubColor2(78,91,49,200);
     inline const sf::Color shrubColor3(0,76,84,200);
 
+    inline const sf::Color holySymbolColor(255,215,0);  // gold
+    inline const sf::Color mushroomColor(187,199,110); // light green
+
     inline const sf::Color invisible(0,0,0,0);
 }

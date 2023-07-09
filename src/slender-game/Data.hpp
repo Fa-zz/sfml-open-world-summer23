@@ -17,7 +17,6 @@ namespace DataSettings {
     inline const float lightRangeFull = 600.f;
     inline const float lightRangeOff = 200.f;
 
-
     // GENERATING OBJECTS DATA
     inline const int numTrees = 900;
     inline const int numFallenTrees = 70;
@@ -28,7 +27,12 @@ namespace DataSettings {
 
     // GENERATING ITEMS DATA
     inline const int numBatteries = 20;
+    inline const int numHolySymbols = 20;
+    inline const int numMushrooms = 10;
 
     // MESSAGE LOG DATA
-    inline const std::string useBatteryString = "You use the battery, and your flashlight flickers more strongly.";
+    inline const std::string useBatteryString = "Your flashlight flickers more strongly.";
+    inline const std::string useHolySymbolString1 = "You feel more optimistic.";
+    inline const std::string useHolySymbolString2 = "You feel healed, in both dimensions.";
+
 }

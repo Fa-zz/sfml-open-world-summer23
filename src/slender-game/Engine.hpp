@@ -2,6 +2,7 @@
 
 #include "World.hpp"
 #include "GameUI.hpp"
+#include "GameAudio.hpp"
 
 #include "Candle/RadialLight.hpp"
 #include "Candle/LightingArea.hpp"
@@ -54,12 +55,16 @@ private:
     sf::CircleShape player;
 
     // Game UI
-    GameUI* gameUIPtr;
+    GameUI* UIPtr;
     std::vector<std::string> logMessages;
     float logTimer;
 
     // World
     World* gameWorldPtr;
+
+    // Audio
+    GameAudio* audioPtr;
+    bool clickedFlashlight;
 
     // Controls
     bool meditateActivated;
@@ -88,6 +93,7 @@ private:
     void initObjects();
     void initUI();
     void initView();
+    void initAudio();
 
 public:
     // CONSTRUCTOR/DESTRUCTOR
@@ -118,6 +124,7 @@ public:
     void updateLog();
     void updateUI();
     void updateLight();
+    void updateAudio();
 
     void update();
 

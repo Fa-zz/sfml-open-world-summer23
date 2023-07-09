@@ -17,13 +17,13 @@ void Engine::initVars() {
     meditateActivated = 0;
     hidingActivated = false;
     leftHiding = false;
-    flashlightOn = true;
+    flashlightOn = false;
+    clickedFlashlight = flashlightOn;
     overHideable = false;
     statusStill = false; 
     statusWalking = false;
     statusRunning = false;
     breathTimer = 0;
-    flashlightBatteryTimer = 0;
     overRock = false;
     overItem = false;
     useItem = false;
@@ -47,6 +47,7 @@ void Engine::initLight() {
     fogPtr->setAreaColor(sf::Color::Black);
 
     flashlightBattery = 100;
+    flashlightBatteryTimer = 0;
 }
 
 void Engine::generatePlayerPosition() {
@@ -74,11 +75,16 @@ void Engine::initObjects() {
 }
 
 void Engine::initUI() {
-    gameUIPtr = new GameUI();
+    UIPtr = new GameUI();
 }
 
 void Engine::initView() {
     mainView.setSize(1920,1080);
+}
+
+void Engine::initAudio() {
+    audioPtr = new GameAudio();
+    audioPtr->playLoopingAmbience();
 }
 
 // CONSTRUCTOR, DESTRUCTOR
@@ -89,6 +95,7 @@ Engine::Engine() {
     initObjects();
     initUI();
     initView();
+    initAudio();
 }
 
 Engine::~Engine() {
@@ -97,7 +104,8 @@ Engine::~Engine() {
     delete fogPtr;
     delete gameAreaBoundsPtr;
     delete gameWorldPtr;
-    delete gameUIPtr;
+    delete UIPtr;
+    delete audioPtr;
 }
 
 // RUN, UPDATE, POLL EVENTS FUNCTIONS
@@ -202,28 +210,66 @@ void Engine::updateItem() {
             break;
         } 
     }
-
-    if (overItem && (!useItem)) {
-        gameUIPtr->setOverItem(true);
-        gameUIPtr->drawOverItemText(itemType);
-    } else if (overItem && useItem && itemType == "battery") {
-        // TODO: update "log text" every time you've used an item.
-        if ((flashlightBattery + 5) > 100 ) {
-            flashlightBattery = 100;
-        } else {
-            flashlightBattery += 5;
-        }
-        flashlightBatteryTimer = 0.f;
-        logMessages.push_back(DataSettings::useBatteryString);
-        gameWorldPtr->batteriesVector.erase(gameWorldPtr->batteriesVector.begin() + highlightedIter);
-        useItem = false;
+    for (auto iter = 0; iter < gameWorldPtr->holySymbolsVector.size(); ++iter) {
+        if (player.getGlobalBounds().intersects(gameWorldPtr->holySymbolsVector[iter].getGlobalBounds())) {
+            gameWorldPtr->holySymbolsVector[iter].setOutlineColor(sf::Color::Yellow);
+            gameWorldPtr->holySymbolsVector[iter].setOutlineThickness(5.f);
+            highlightedIter = iter;
+            overItem = true;
+            itemType = "holy symbol";
+            break;
+        } 
+    }
+    for (auto iter = 0; iter < gameWorldPtr->mushroomsVector.size(); ++iter) {
+        if (player.getGlobalBounds().intersects(gameWorldPtr->mushroomsVector[iter].getGlobalBounds())) {
+            gameWorldPtr->mushroomsVector[iter].setOutlineColor(sf::Color::Yellow);
+            gameWorldPtr->mushroomsVector[iter].setOutlineThickness(5.f);
+            highlightedIter = iter;
+            overItem = true;
+            itemType = "mushroom";
+            break;
+        } 
     }
 
+    if (overItem && (!useItem)) {
+        UIPtr->setOverItem(true);
+        UIPtr->drawOverItemText(itemType);
+    } else if (overItem && useItem)
+        if (itemType == "battery") {
+            if ((flashlightBattery + 10) > 100 ) {
+                flashlightBattery = 100;
+            } else {
+                flashlightBattery += 10;
+            }
+            flashlightBatteryTimer = 0.f;
+
+            logMessages.push_back(DataSettings::useBatteryString);
+            gameWorldPtr->batteriesVector.erase(gameWorldPtr->batteriesVector.begin() + highlightedIter);
+            useItem = false;
+            
+        } else if (itemType == "holy symbol") {
+            UIPtr->setSanityBar(100.f);
+            int randChanceToHeal = gameWorldPtr->randomInt(1, 10);
+            if (randChanceToHeal > 3) {
+                UIPtr->setHealthBar(60.f);
+                logMessages.push_back(DataSettings::useHolySymbolString2);
+            } else {
+                logMessages.push_back(DataSettings::useHolySymbolString1);
+            }
+
+            gameWorldPtr->holySymbolsVector.erase(gameWorldPtr->holySymbolsVector.begin() + highlightedIter);
+            useItem = false;
+        } 
+
     if (!(overItem)) {
-        gameUIPtr->setOverItem(false);
+        UIPtr->setOverItem(false);
         if (highlightedIter != -1) {
             if (itemType == "battery")
                 gameWorldPtr->batteriesVector[highlightedIter].setOutlineThickness(0.f);
+            if (itemType == "holy symbol")
+                gameWorldPtr->holySymbolsVector[highlightedIter].setOutlineThickness(0.f);
+            if (itemType == "mushroom")
+                gameWorldPtr->mushroomsVector[highlightedIter].setOutlineThickness(0.f);
             highlightedIter = -1;
         }
     } 
@@ -266,61 +312,61 @@ void Engine::modifySpeedIfObstacles() {
 
 void Engine::updateSanity(bool isMeditating) {
     if (!isMeditating) {
-        gameUIPtr->setStatusMeditating(false);
+        UIPtr->setStatusMeditating(false);
         if (sanityTimer > 3) {
-            gameUIPtr->setSanityBar(-6);
+            UIPtr->setSanityBar(-6);
             sanityTimer = 0;
         }
     } else {
-        gameUIPtr->setStatusMeditating(true);
+        UIPtr->setStatusMeditating(true);
         if (sanityTimer > 4) {
-            gameUIPtr->setSanityBar(15);
+            UIPtr->setSanityBar(30);
             sanityTimer = 0;
         }
     }        
 }
 
 void Engine::handleBreath() {
-    float breathCurrent = gameUIPtr->getBarCurrent("breath").x;
-    float breathMax = gameUIPtr->getBarCurrent("breath").y;
+    float breathCurrent = UIPtr->getBarCurrent("breath").x;
+    float breathMax = UIPtr->getBarCurrent("breath").y;
     // std::cout << "breath current: " << breathCurrent << " breath max: " << breathMax << std::endl;
 
     if (statusRunning || (hidingActivated && hideable == 2) || breathCurrent < breathMax) {
-        gameUIPtr->setDisplayBreathBar(true);
+        UIPtr->setDisplayBreathBar(true);
         isBreathing = true;
         if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent) {
             if (breathTimer > 1) {
-                gameUIPtr->setBreathBar(-30);
+                UIPtr->setBreathBar(-30);
                 breathTimer = 0;
             }
         } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent)) {
             if (breathTimer > 3) {
-                gameUIPtr->setHealthBar(-12);
+                UIPtr->setHealthBar(-12);
                 breathTimer = 0;
             }
         } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax) {
             if (breathTimer > 4) {
-                gameUIPtr->setBreathBar(12);
+                UIPtr->setBreathBar(12);
                 breathTimer = 0;
             }
         } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax) {
             if (breathTimer > 2) {
-                gameUIPtr->setBreathBar(30);
+                UIPtr->setBreathBar(30);
                 breathTimer = 0;
             }
         }
     } else if (breathCurrent == breathMax) {
         isBreathing = false;
-        gameUIPtr->setDisplayBreathBar(false);
+        UIPtr->setDisplayBreathBar(false);
     }
 }
 
 void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable) {
     if (!overHideable)
-        gameUIPtr->setOverHideable(false);
+        UIPtr->setOverHideable(false);
 
     if (!hidingActivated) {
-        gameUIPtr->setStatusHiding(false);
+        UIPtr->setStatusHiding(false);
         player.setFillColor(playerSkinTone);
         if (leftHiding) {
             flashlightOn = true;
@@ -329,13 +375,13 @@ void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable)
     }
 
     if (!hidingActivated && overHideable) {
-        gameUIPtr->setOverHideable(true);
-        gameUIPtr->drawOverHideableText(hideable);
+        UIPtr->setOverHideable(true);
+        UIPtr->drawOverHideableText(hideable);
     }
     
     if (hidingActivated) {
-        gameUIPtr->setOverHideable(false);
-        gameUIPtr->setStatusHiding(true);
+        UIPtr->setOverHideable(false);
+        UIPtr->setStatusHiding(true);
         player.setFillColor(CustomColors::invisible);
         flashlightOn = false;
         leftHiding = true;
@@ -351,13 +397,15 @@ void Engine::updateUIActivityLevel(bool statusStill, bool statusWalking, bool st
     } else if (statusRunning) {
         activity = "Running";
     }
-    gameUIPtr->setStatusActivityLevel(activity);
+    UIPtr->setStatusActivityLevel(activity);
 }
 
 // TODO: move player collision stuff to its own function
 void Engine::updatePlayer() {
     // std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
-    statusStill, statusWalking, statusRunning = false;
+    statusStill = false;
+    statusWalking = false;
+    statusRunning = false;
     playerMovement = sf::Vector2f(0,0);
 
     playerSpeedModifier = 1;
@@ -412,13 +460,13 @@ void Engine::updatePlayer() {
 
 void Engine::updateLog() {
     if (logMessages.size()) {
-        gameUIPtr->setLogMessage(true, logMessages[0]);
+        UIPtr->setLogMessage(true, logMessages[0]);
         if (logTimer > 5.f) {
             logMessages.erase(logMessages.begin());
             logTimer = 0;
         }
     } else {
-        gameUIPtr->setLogMessage(false, "");
+        UIPtr->setLogMessage(false, "");
         logTimer = 0;
     }
 }
@@ -450,21 +498,25 @@ void Engine::updateLight() {
         }
     }
 
-    std::cout << "lightPtr->getRange(): " << lightPtr->getRange() << std::endl;
-
     std::string flashlightBatteryString;
     flashlightBatteryString = std::to_string(flashlightBattery);
     if (flashlightBattery > 75) {
-        gameUIPtr->setBattery(flashlightBatteryString, sf::Color::Green);
+        UIPtr->setBattery(flashlightBatteryString, sf::Color::Green);
     } else if (flashlightBattery >= 50 && flashlightBattery <= 75) {
-        gameUIPtr->setBattery(flashlightBatteryString, sf::Color::Yellow);
+        UIPtr->setBattery(flashlightBatteryString, sf::Color::Yellow);
     } else if (flashlightBattery > 1 && flashlightBattery <= 50) {
-        gameUIPtr->setBattery(flashlightBatteryString, sf::Color::Red);
+        UIPtr->setBattery(flashlightBatteryString, sf::Color::Red);
+    }
+}
+
+void Engine::updateAudio() {
+    if (clickedFlashlight != flashlightOn) {
+        audioPtr->playFlashlightClick();
+        clickedFlashlight = flashlightOn;
     }
 }
 
 void Engine::update() {
-
     pollEvents();
     updatePlayer();
     handleBreath();
@@ -487,6 +539,7 @@ void Engine::update() {
     updateUI();
     updateLight();
     updateItem();
+    updateAudio();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
     std::cout << "Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " logTimer: " << logTimer << std::endl;
@@ -494,7 +547,7 @@ void Engine::update() {
 
 // RENDER FUNCTIONS
 void Engine::renderUI(sf::RenderTarget& target) {
-    gameUIPtr->renderUI(target);
+    UIPtr->renderUI(target);
 }
 
 void Engine::renderObjects(sf::RenderTarget& target) {

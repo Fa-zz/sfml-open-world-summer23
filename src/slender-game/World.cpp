@@ -271,10 +271,20 @@ void World::generateShrubs() {
 void World::generateAllItems() {
     while (batteriesVector.size() < DataSettings::numBatteries) {
         sf::CircleShape battery(15.f, 4);
-        battery.setFillColor(sf::Color::Blue);
+        battery.setFillColor(sf::Color::Black);
         itemPosCheck(battery, batteriesVector);
-        std::cout << "battery x: " << battery.getPosition().x << " battery y: " << battery.getPosition().y << std::endl;
     }
+    while (holySymbolsVector.size() < DataSettings::numHolySymbols) {
+        sf::CircleShape holySymbol(15.f, 4);
+        holySymbol.setFillColor(CustomColors::holySymbolColor);
+        itemPosCheck(holySymbol, holySymbolsVector);
+    }
+    while (mushroomsVector.size() < DataSettings::numMushrooms) {
+        sf::CircleShape mushroom(15.f, 4);
+        mushroom.setFillColor(CustomColors::mushroomColor);
+        itemPosCheck(mushroom, mushroomsVector);
+    }
+
 }
 
 void World::itemPosCheck(sf::CircleShape &item, std::vector<sf::CircleShape> &itemsVector) {
@@ -282,8 +292,14 @@ void World::itemPosCheck(sf::CircleShape &item, std::vector<sf::CircleShape> &it
     float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
 
     item.setPosition(x, y);
-    bool intersects = std::any_of(itemsVector.begin(), itemsVector.end(), [&](const sf::CircleShape& existingItem) {
-        return checkIntersection(item, existingItem);
+    // bool intersects = std::any_of(itemsVector.begin(), itemsVector.end(), [&](const sf::CircleShape& existingItem) {
+    //     return checkIntersection(item, existingItem);
+    // });
+    bool intersects = std::any_of(batteriesVector.begin(), batteriesVector.end(), [&](const sf::CircleShape& existingBattery) {
+        return checkIntersection(item, existingBattery);
+    });
+    intersects = intersects || std::any_of(holySymbolsVector.begin(), holySymbolsVector.end(), [&](const sf::CircleShape& existingHolySymbol) {
+        return checkIntersection(item, existingHolySymbol);
     });
     intersects = intersects || std::any_of(treesVector.begin(), treesVector.end(), [&](const sf::CircleShape& existingTree) {
         return checkIntersection(item, existingTree);
@@ -336,9 +352,17 @@ void World::render(sf::RenderTarget& target) {
         target.draw(bushesVector[iter]);
     }
 
+    // Item generation here; below shrubs but above the rest
     for (auto iter = 0; iter < batteriesVector.size(); ++iter) {
         target.draw(batteriesVector[iter]);
     }
+    for (auto iter = 0; iter < holySymbolsVector.size(); ++iter) {
+        target.draw(holySymbolsVector[iter]);
+    }
+    for (auto iter = 0; iter < mushroomsVector.size(); ++iter) {
+        target.draw(mushroomsVector[iter]);
+    }
+
 
     for (auto iter = 0; iter < shrubsVector.size(); ++iter) {
         target.draw(shrubsVector[iter]);
