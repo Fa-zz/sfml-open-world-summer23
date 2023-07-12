@@ -48,7 +48,8 @@ private:
 
     // Light, battery
     candle::RadialLight* lightPtr;
-    candle::LightingArea* fogPtr;
+    candle::LightingArea* fogPtr1;
+    candle::LightingArea* fogPtr2;
     float currentLightRange;
     int flashlightBattery;
 

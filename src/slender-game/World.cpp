@@ -55,7 +55,7 @@ void World::generateTrees() {
 
     while (fallenTreesVector.size() < DataSettings::numFallenTrees) {
         float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
-        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
+        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
         sf::RectangleShape rectangle;
 
         int treeHorizOrVertChance = randomInt(1,3);
@@ -156,7 +156,7 @@ void World::generateRocks() {
 void World::generateMudPatches() {
     while (mudPatchesVector.size() < DataSettings::numMudPatches) {
         float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
-        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
+        float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-500.f);
         sf::RectangleShape mudPatch;
 
         mudPatch.setSize(sf::Vector2f(500, 500));
@@ -318,10 +318,15 @@ void World::itemPosCheck(sf::CircleShape &item, std::vector<sf::CircleShape> &it
 
 void World::generateWorld() {
     generateTrees();
+    std::cout << "Trees all generated" << std::endl;
     generateRocks();
+    std::cout << "Rocks all generated" << std::endl;
     generateMudPatches();
+    std::cout << "Mud all generated" << std::endl;
     generateBushes();
+    std::cout << "Bushes all generated" << std::endl;
     generateShrubs();
+    std::cout << "Shrubs all generated" << std::endl;
 
     generateAllItems();
 }

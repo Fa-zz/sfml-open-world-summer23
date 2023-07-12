@@ -3,9 +3,8 @@
 // PRIVATE FUNCTIONS, INIT FUNCTIONS
 void Engine::initWindow() {
     window = new sf::RenderWindow(sf::VideoMode(DataSettings::videoModeWidth,DataSettings::videoModeHeight), "Forest of Shapes", sf::Style::Default | sf::Style::Close);
-    window->setFramerateLimit(DataSettings::frameRateLimit);
     window->setVerticalSyncEnabled(false);
-    window->setFramerateLimit(100);
+    window->setFramerateLimit(DataSettings::frameRateLimit);
 }
 
 void Engine::initVars() {
@@ -43,9 +42,10 @@ void Engine::initLight() {
 
 
     float fogRenderOffset = gameAreaSize.x / 10;
-    fogPtr = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-fogRenderOffset,-fogRenderOffset), sf::Vector2f(gameAreaSize.x+(fogRenderOffset*2), gameAreaSize.y+(fogRenderOffset*2)));
-    std::cout << "Fog ptr global bounds: " << fogPtr->getGlobalBounds().height << " " << fogPtr->getGlobalBounds().width << std::endl;
-    fogPtr->setAreaColor(sf::Color::Black);
+    fogPtr1 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-1000,-1000), sf::Vector2f(gameAreaSize.x/2+2000, gameAreaSize.y+2000));
+    fogPtr2 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(gameAreaSize.x/2 -1000,-1000), sf::Vector2f(gameAreaSize.x/2+2000, gameAreaSize.y + 2000));
+    fogPtr1->setAreaColor(sf::Color::Black);
+    fogPtr2->setAreaColor(sf::Color::Black);
 
     flashlightBattery = 100;
     flashlightBatteryTimer = 0;
@@ -102,7 +102,10 @@ Engine::Engine() {
 Engine::~Engine() {
     delete window;
     delete lightPtr;
-    delete fogPtr;
+    delete fogPtr1;
+    delete fogPtr2;
+    // delete fogPtr3;
+    // delete fogPtr4;
     delete gameAreaBoundsPtr;
     delete gameWorldPtr;
     delete UIPtr;
@@ -547,6 +550,7 @@ void Engine::update() {
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
     std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " logTimer: " << logTimer << std::endl;
+    std::cout << "Player pos x: " << player.getPosition().x << " Player pos y: " << player.getPosition().y << std::endl;
 }
 
 // RENDER FUNCTIONS
@@ -563,10 +567,13 @@ void Engine::render() {
     // Draw
 
     // Draw light, fog
-    fogPtr->clear();
-    fogPtr->draw(*lightPtr);
-    fogPtr->display();
-
+    fogPtr1->clear();
+    fogPtr1->draw(*lightPtr);
+    fogPtr1->display();
+    fogPtr2->clear();
+    fogPtr2->draw(*lightPtr);
+    fogPtr2->display();
+    
     window->clear(CustomColors::groundColor);
 
     window->setView(mainView);
@@ -574,8 +581,8 @@ void Engine::render() {
     // Draw objects
     renderObjects(*this->window);
 
-    window->draw(*fogPtr);
-    window->draw(visibleToPlayer);
+    window->draw(*fogPtr1);
+    window->draw(*fogPtr2);
     window->draw(player);
 
     // for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
