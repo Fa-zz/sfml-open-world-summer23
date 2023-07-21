@@ -23,7 +23,7 @@ private:
 
     // Generate item function
     void generateAllItems();
-    void itemPosCheck(sf::CircleShape &item, std::vector<sf::CircleShape> &itemsVector);
+    void itemPosCheck(sf::CircleShape &item);
 
     void generateWorld();
 
@@ -46,9 +46,11 @@ public:
     std::vector<sf::CircleShape> shrubsVector;
 
     // Items
+    std::vector<sf::CircleShape> itemsVector; // Items vector includes: batteries, holy symbols, mushrooms, and notes
     std::vector<sf::CircleShape> batteriesVector;
     std::vector<sf::CircleShape> holySymbolsVector;
     std::vector<sf::CircleShape> mushroomsVector;
+    std::vector<sf::CircleShape> notesVector;
 
     // Constructor / destructor
     World();

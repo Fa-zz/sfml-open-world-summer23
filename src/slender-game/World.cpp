@@ -269,38 +269,43 @@ void World::generateShrubs() {
 }
 
 void World::generateAllItems() {
-    while (batteriesVector.size() < DataSettings::numBatteries) {
+    while (itemsVector.size() < DataSettings::numBatteries) {
         sf::CircleShape battery(15.f, 4);
         battery.setFillColor(sf::Color::Black);
-        itemPosCheck(battery, batteriesVector);
+        itemPosCheck(battery);
     }
-    while (holySymbolsVector.size() < DataSettings::numHolySymbols) {
+    while (itemsVector.size() < DataSettings::numBatteries + DataSettings::numHolySymbols) {
         sf::CircleShape holySymbol(15.f, 4);
         holySymbol.setFillColor(CustomColors::holySymbolColor);
-        itemPosCheck(holySymbol, holySymbolsVector);
+        itemPosCheck(holySymbol);
     }
-    while (mushroomsVector.size() < DataSettings::numMushrooms) {
+    while (itemsVector.size() < DataSettings::numBatteries + DataSettings::numHolySymbols + DataSettings::numMushrooms) {
         sf::CircleShape mushroom(15.f, 4);
         mushroom.setFillColor(CustomColors::mushroomColor);
-        itemPosCheck(mushroom, mushroomsVector);
+        itemPosCheck(mushroom);
+    }
+    while (itemsVector.size() < DataSettings::numBatteries + DataSettings::numHolySymbols + DataSettings::numMushrooms + DataSettings::numNotes) {
+        sf::CircleShape note(15.f, 4);
+        note.setFillColor(CustomColors::noteColor);
+        itemPosCheck(note);
     }
 
 }
 
-void World::itemPosCheck(sf::CircleShape &item, std::vector<sf::CircleShape> &itemsVector) {
+void World::itemPosCheck(sf::CircleShape &item) {
     float x = randomFloat(0+150.f, DataSettings::gameWorldSizeX-150.f);
     float y = randomFloat(0+150.f, DataSettings::gameWorldSizeY-150.f);
 
     item.setPosition(x, y);
-    // bool intersects = std::any_of(itemsVector.begin(), itemsVector.end(), [&](const sf::CircleShape& existingItem) {
-    //     return checkIntersection(item, existingItem);
+    bool intersects = std::any_of(itemsVector.begin(), itemsVector.end(), [&](const sf::CircleShape& existingItem) {
+        return checkIntersection(item, existingItem);
+    });
+    // bool intersects = std::any_of(batteriesVector.begin(), batteriesVector.end(), [&](const sf::CircleShape& existingBattery) {
+    //     return checkIntersection(item, existingBattery);
     // });
-    bool intersects = std::any_of(batteriesVector.begin(), batteriesVector.end(), [&](const sf::CircleShape& existingBattery) {
-        return checkIntersection(item, existingBattery);
-    });
-    intersects = intersects || std::any_of(holySymbolsVector.begin(), holySymbolsVector.end(), [&](const sf::CircleShape& existingHolySymbol) {
-        return checkIntersection(item, existingHolySymbol);
-    });
+    // intersects = intersects || std::any_of(holySymbolsVector.begin(), holySymbolsVector.end(), [&](const sf::CircleShape& existingHolySymbol) {
+    //     return checkIntersection(item, existingHolySymbol);
+    // });
     intersects = intersects || std::any_of(treesVector.begin(), treesVector.end(), [&](const sf::CircleShape& existingTree) {
         return checkIntersection(item, existingTree);
     });
@@ -311,6 +316,7 @@ void World::itemPosCheck(sf::CircleShape &item, std::vector<sf::CircleShape> &it
     if (!intersects)
     {
         itemsVector.push_back(item);
+        std::cout << "Items vector size: " << itemsVector.size() << std::endl;
     }
 
 
@@ -329,6 +335,7 @@ void World::generateWorld() {
     std::cout << "Shrubs all generated" << std::endl;
 
     generateAllItems();
+    std::cout << "Items all generated" << std::endl;
 }
 
 
@@ -341,6 +348,7 @@ World::World() {
 void World::render(sf::RenderTarget& target) {
     // RENDER OBJECTS & ITEMS
 
+    // Render objects, besides shrubs
     for (auto iter = 0; iter < mudPatchesVector.size(); ++iter) {
         target.draw(mudPatchesVector[iter]);
     }
@@ -357,17 +365,22 @@ void World::render(sf::RenderTarget& target) {
         target.draw(bushesVector[iter]);
     }
 
-    // Item generation here; below shrubs but above the rest
-    for (auto iter = 0; iter < batteriesVector.size(); ++iter) {
-        target.draw(batteriesVector[iter]);
+    // Item rendering here; below shrubs but above the rest
+    // for (auto iter = 0; iter < batteriesVector.size(); ++iter) {
+    //     target.draw(batteriesVector[iter]);
+    // }
+    // for (auto iter = 0; iter < holySymbolsVector.size(); ++iter) {
+    //     target.draw(holySymbolsVector[iter]);
+    // }
+    // for (auto iter = 0; iter < mushroomsVector.size(); ++iter) {
+    //     target.draw(mushroomsVector[iter]);
+    // }
+    // for (auto iter = 0; iter < notesVector.size(); ++iter) {
+    //     target.draw(notesVector[iter]);
+    // }
+    for (auto iter = 0; iter < itemsVector.size(); ++iter) {
+        target.draw(itemsVector[iter]);
     }
-    for (auto iter = 0; iter < holySymbolsVector.size(); ++iter) {
-        target.draw(holySymbolsVector[iter]);
-    }
-    for (auto iter = 0; iter < mushroomsVector.size(); ++iter) {
-        target.draw(mushroomsVector[iter]);
-    }
-
 
     for (auto iter = 0; iter < shrubsVector.size(); ++iter) {
         target.draw(shrubsVector[iter]);

@@ -30,6 +30,7 @@ namespace CustomColors {
 
     inline const sf::Color holySymbolColor(255,215,0);  // gold
     inline const sf::Color mushroomColor(187,199,110); // light green
+    inline const sf::Color noteColor(255,229,204);     // light pale-ish color
 
     inline const sf::Color invisible(0,0,0,0);
 }

@@ -29,6 +29,8 @@ namespace DataSettings {
     inline const int numBatteries = (20)*2;
     inline const int numHolySymbols = (20)*2;
     inline const int numMushrooms = (10)*2;
+    inline const int numNotes = 5;
+    inline int numTotalItems = numBatteries+numHolySymbols+numMushrooms;
 
     // MESSAGE LOG DATA
     inline const std::string useBatteryString = "Your flashlight flickers more strongly.";

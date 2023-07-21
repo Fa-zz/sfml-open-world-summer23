@@ -204,36 +204,44 @@ void Engine::updatePlayerMovement(float modifier) {
 
 void Engine::updateItem() {
     overItem = false;
-    for (auto iter = 0; iter < gameWorldPtr->batteriesVector.size(); ++iter) {
-        if (player.getGlobalBounds().intersects(gameWorldPtr->batteriesVector[iter].getGlobalBounds())) {
-            gameWorldPtr->batteriesVector[iter].setOutlineColor(sf::Color::Yellow);
-            gameWorldPtr->batteriesVector[iter].setOutlineThickness(5.f);
+    for (auto iter = 0; iter < gameWorldPtr->itemsVector.size(); ++iter) {
+        if (player.getGlobalBounds().intersects(gameWorldPtr->itemsVector[iter].getGlobalBounds())) {
+            gameWorldPtr->itemsVector[iter].setOutlineColor(sf::Color::Yellow);
+            gameWorldPtr->itemsVector[iter].setOutlineThickness(5.f);
             highlightedIter = iter;
             overItem = true;
-            itemType = "battery";
             break;
         } 
     }
-    for (auto iter = 0; iter < gameWorldPtr->holySymbolsVector.size(); ++iter) {
-        if (player.getGlobalBounds().intersects(gameWorldPtr->holySymbolsVector[iter].getGlobalBounds())) {
-            gameWorldPtr->holySymbolsVector[iter].setOutlineColor(sf::Color::Yellow);
-            gameWorldPtr->holySymbolsVector[iter].setOutlineThickness(5.f);
-            highlightedIter = iter;
-            overItem = true;
-            itemType = "holy symbol";
-            break;
-        } 
-    }
-    for (auto iter = 0; iter < gameWorldPtr->mushroomsVector.size(); ++iter) {
-        if (player.getGlobalBounds().intersects(gameWorldPtr->mushroomsVector[iter].getGlobalBounds())) {
-            gameWorldPtr->mushroomsVector[iter].setOutlineColor(sf::Color::Yellow);
-            gameWorldPtr->mushroomsVector[iter].setOutlineThickness(5.f);
-            highlightedIter = iter;
-            overItem = true;
-            itemType = "mushroom";
-            break;
-        } 
-    }
+    if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == sf::Color::Black)
+        itemType = "battery";
+    if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::holySymbolColor)
+        itemType = "holy symbol";
+    if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::mushroomColor)
+        itemType = "mushroom";
+    if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::noteColor)
+        itemType = "note";
+
+    // for (auto iter = 0; iter < gameWorldPtr->holySymbolsVector.size(); ++iter) {
+    //     if (player.getGlobalBounds().intersects(gameWorldPtr->holySymbolsVector[iter].getGlobalBounds())) {
+    //         gameWorldPtr->holySymbolsVector[iter].setOutlineColor(sf::Color::Yellow);
+    //         gameWorldPtr->holySymbolsVector[iter].setOutlineThickness(5.f);
+    //         highlightedIter = iter;
+    //         overItem = true;
+    //         itemType = "holy symbol";
+    //         break;
+    //     } 
+    // }
+    // for (auto iter = 0; iter < gameWorldPtr->mushroomsVector.size(); ++iter) {
+    //     if (player.getGlobalBounds().intersects(gameWorldPtr->mushroomsVector[iter].getGlobalBounds())) {
+    //         gameWorldPtr->mushroomsVector[iter].setOutlineColor(sf::Color::Yellow);
+    //         gameWorldPtr->mushroomsVector[iter].setOutlineThickness(5.f);
+    //         highlightedIter = iter;
+    //         overItem = true;
+    //         itemType = "mushroom";
+    //         break;
+    //     } 
+    // }
 
     if (overItem && (!useItem)) {
         UIPtr->setOverItem(true);
@@ -248,7 +256,7 @@ void Engine::updateItem() {
             flashlightBatteryTimer = 0.f;
 
             logMessages.push_back(DataSettings::useBatteryString);
-            gameWorldPtr->batteriesVector.erase(gameWorldPtr->batteriesVector.begin() + highlightedIter);
+            gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
             useItem = false;
             
         } else if (itemType == "holy symbol") {
@@ -261,19 +269,14 @@ void Engine::updateItem() {
                 logMessages.push_back(DataSettings::useHolySymbolString1);
             }
 
-            gameWorldPtr->holySymbolsVector.erase(gameWorldPtr->holySymbolsVector.begin() + highlightedIter);
+            gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
             useItem = false;
         } 
 
     if (!(overItem)) {
         UIPtr->setOverItem(false);
         if (highlightedIter != -1) {
-            if (itemType == "battery")
-                gameWorldPtr->batteriesVector[highlightedIter].setOutlineThickness(0.f);
-            if (itemType == "holy symbol")
-                gameWorldPtr->holySymbolsVector[highlightedIter].setOutlineThickness(0.f);
-            if (itemType == "mushroom")
-                gameWorldPtr->mushroomsVector[highlightedIter].setOutlineThickness(0.f);
+            gameWorldPtr->itemsVector[highlightedIter].setOutlineThickness(0.f);
             highlightedIter = -1;
         }
     } 
@@ -573,7 +576,7 @@ void Engine::render() {
     fogPtr2->clear();
     fogPtr2->draw(*lightPtr);
     fogPtr2->display();
-    
+
     window->clear(CustomColors::groundColor);
 
     window->setView(mainView);
