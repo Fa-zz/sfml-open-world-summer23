@@ -42,7 +42,7 @@ void Engine::initLight() {
 
 
     float fogRenderOffset = gameAreaSize.x / 10;
-    fogPtr1 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-1000,-1000), sf::Vector2f(gameAreaSize.x/2+2000, gameAreaSize.y+2000));
+    fogPtr1 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-1000,-1000), sf::Vector2f(gameAreaSize.x/2, gameAreaSize.y+2000));
     fogPtr2 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(gameAreaSize.x/2 -1000,-1000), sf::Vector2f(gameAreaSize.x/2+2000, gameAreaSize.y + 2000));
     fogPtr1->setAreaColor(sf::Color::Black);
     fogPtr2->setAreaColor(sf::Color::Black);
