@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 
 #include "CustomColors.hpp"
 
@@ -22,6 +23,7 @@ private:
     sf::Text breathBarText;
     sf::Text batteryText;
     sf::Text logText;
+    sf::Text notesFoundText;
 
     // Status texts
     sf::Text overHideableText;
@@ -65,6 +67,7 @@ public:
     void drawStatusTexts();
     void drawBatteryText();
     void drawLogText();
+    void drawNotesFoundText();
 
     sf::Vector2f getBarCurrent(std::string bar);
 
@@ -85,6 +88,8 @@ public:
     void setBattery(std::string battery, sf::Color color);
 
     void setLogMessage(bool display, std::string message, sf::Color color=sf::Color::White);
+
+    void setNotesFound(int numNotesFound);
 
     GameUI();
 

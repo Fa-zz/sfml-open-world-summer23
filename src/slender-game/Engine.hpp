@@ -54,8 +54,13 @@ private:
     int flashlightBattery;
 
     // Player
-    sf::Color playerSkinTone;
     sf::CircleShape player;
+    sf::Color playerSkinTone;
+
+    // Notes and Monster
+    int notesFound;
+    bool firstItemFound;
+    float appearanceTimer;
 
     // Game UI
     GameUI* UIPtr;

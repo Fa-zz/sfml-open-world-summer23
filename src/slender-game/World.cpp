@@ -288,6 +288,7 @@ void World::generateAllItems() {
         sf::CircleShape note(15.f, 4);
         note.setFillColor(CustomColors::noteColor);
         itemPosCheck(note);
+        std::cout << note.getPosition().x << " " << note.getPosition().y << std::endl;
     }
 
 }

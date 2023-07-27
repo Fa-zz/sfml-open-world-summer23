@@ -25,6 +25,7 @@ void GameUI::initFont() {
         batteryText.setFont(font);
         overItemText.setFont(font);
         logText.setFont(font);
+        notesFoundText.setFont(font);
     }
 }
 
@@ -91,7 +92,7 @@ void GameUI::drawOverItemText(std::string itemType) {
     overItemText.setString("There is a " + itemType + " here.\n Press E to use.");
 
     overItemText.setCharacterSize(25);
-    overItemText.setPosition(1500,350);
+    overItemText.setPosition(1500,400);
 }
 
 void GameUI::drawStatusTexts() {
@@ -117,6 +118,11 @@ void GameUI::drawBatteryText() {
 void GameUI::drawLogText() {
     logText.setCharacterSize(30);
     logText.setPosition(0.f,30.f);
+}
+
+void GameUI::drawNotesFoundText() {
+    notesFoundText.setCharacterSize(50);
+    notesFoundText.setPosition(0.f,1020.f);
 }
 
 //TODO: Change to general bar x and y
@@ -202,6 +208,10 @@ void GameUI::setLogMessage(bool display, std::string message, sf::Color color){
     logText.setColor(color);
 }
 
+void GameUI::setNotesFound(int numNotesFound) {
+    notesFoundText.setString("Notes found: " +  std::to_string(numNotesFound) + "/5");
+}
+
 // constructor
 GameUI::GameUI() {
     initVars();
@@ -212,6 +222,7 @@ GameUI::GameUI() {
     drawStatusTexts();
     drawBatteryText();
     drawLogText();
+    drawNotesFoundText();
 }
 
 void GameUI::renderUI(sf::RenderTarget& target) {
@@ -240,4 +251,5 @@ void GameUI::renderUI(sf::RenderTarget& target) {
     target.draw(batteryText);
     if (displayToLog)
         target.draw(logText);
+    target.draw(notesFoundText);
 }

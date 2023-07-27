@@ -7,6 +7,7 @@ void Engine::initWindow() {
     window->setFramerateLimit(DataSettings::frameRateLimit);
 }
 
+// Todo: Split into other funcs.
 void Engine::initVars() {
     gameAreaSize = sf::Vector2f(DataSettings::gameWorldSizeX, DataSettings::gameWorldSizeY);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
@@ -30,6 +31,7 @@ void Engine::initVars() {
     itemType = "";
     logTimer = 0;
     totalTime = 0;
+    notesFound = 0;
 }
 
 void Engine::initLight() {
@@ -42,10 +44,10 @@ void Engine::initLight() {
 
 
     float fogRenderOffset = gameAreaSize.x / 10;
-    fogPtr1 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-1000,-1000), sf::Vector2f(gameAreaSize.x/2, gameAreaSize.y+2000));
-    fogPtr2 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(gameAreaSize.x/2 -1000,-1000), sf::Vector2f(gameAreaSize.x/2+2000, gameAreaSize.y + 2000));
+    fogPtr1 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-fogRenderOffset,-fogRenderOffset), sf::Vector2f(gameAreaSize.x+(fogRenderOffset*2), gameAreaSize.y+(fogRenderOffset*2)));    
+    // fogPtr2 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(gameAreaSize.x/2 -1000,-1000), sf::Vector2f(gameAreaSize.x/2+2000, gameAreaSize.y + 2000));
     fogPtr1->setAreaColor(sf::Color::Black);
-    fogPtr2->setAreaColor(sf::Color::Black);
+    // fogPtr2->setAreaColor(sf::Color::Black);
 
     flashlightBattery = 100;
     flashlightBatteryTimer = 0;
@@ -103,7 +105,7 @@ Engine::~Engine() {
     delete window;
     delete lightPtr;
     delete fogPtr1;
-    delete fogPtr2;
+    // delete fogPtr2;
     // delete fogPtr3;
     // delete fogPtr4;
     delete gameAreaBoundsPtr;
@@ -149,7 +151,7 @@ void Engine::pollEvents() {
 }
 
 void Engine::playerOutOfBoundsAdjust() {
-    std::cout << "ADJUSTING PLAYER POS, EXCEEDING BOUNDS" << std::endl;
+    logMessages.push_back(DataSettings::outOfBoundsString);
     // Adjust player position if it exceeds the game area bounds
     if (playerNewPosition.x < gameAreaBoundsPtr->left)
         playerNewPosition.x = gameAreaBoundsPtr->left;
@@ -213,52 +215,35 @@ void Engine::updateItem() {
             break;
         } 
     }
-    if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == sf::Color::Black)
-        itemType = "battery";
-    if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::holySymbolColor)
-        itemType = "holy symbol";
-    if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::mushroomColor)
-        itemType = "mushroom";
-    if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::noteColor)
-        itemType = "note";
 
-    // for (auto iter = 0; iter < gameWorldPtr->holySymbolsVector.size(); ++iter) {
-    //     if (player.getGlobalBounds().intersects(gameWorldPtr->holySymbolsVector[iter].getGlobalBounds())) {
-    //         gameWorldPtr->holySymbolsVector[iter].setOutlineColor(sf::Color::Yellow);
-    //         gameWorldPtr->holySymbolsVector[iter].setOutlineThickness(5.f);
-    //         highlightedIter = iter;
-    //         overItem = true;
-    //         itemType = "holy symbol";
-    //         break;
-    //     } 
-    // }
-    // for (auto iter = 0; iter < gameWorldPtr->mushroomsVector.size(); ++iter) {
-    //     if (player.getGlobalBounds().intersects(gameWorldPtr->mushroomsVector[iter].getGlobalBounds())) {
-    //         gameWorldPtr->mushroomsVector[iter].setOutlineColor(sf::Color::Yellow);
-    //         gameWorldPtr->mushroomsVector[iter].setOutlineThickness(5.f);
-    //         highlightedIter = iter;
-    //         overItem = true;
-    //         itemType = "mushroom";
-    //         break;
-    //     } 
-    // }
+    if (highlightedIter != -1) {
+        if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == sf::Color::Black)
+            itemType = "battery";
+        if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::holySymbolColor)
+            itemType = "holy symbol";
+        if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::mushroomColor)
+            itemType = "mushroom";
+        if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::noteColor)
+            itemType = "note";
+    }
 
     if (overItem && (!useItem)) {
         UIPtr->setOverItem(true);
         UIPtr->drawOverItemText(itemType);
-    } else if (overItem && useItem)
+    } else if (overItem && useItem) {
         if (itemType == "battery") {
             if ((flashlightBattery + 10) > 100 ) {
                 flashlightBattery = 100;
             } else {
                 flashlightBattery += 10;
             }
+            currentLightRange += 40;
             flashlightBatteryTimer = 0.f;
 
             logMessages.push_back(DataSettings::useBatteryString);
-            gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
-            useItem = false;
-            
+            // gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
+            // useItem = false;
+
         } else if (itemType == "holy symbol") {
             UIPtr->setSanityBar(100.f);
             int randChanceToHeal = gameWorldPtr->randomInt(1, 10);
@@ -269,9 +254,15 @@ void Engine::updateItem() {
                 logMessages.push_back(DataSettings::useHolySymbolString1);
             }
 
-            gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
-            useItem = false;
-        } 
+        } else if (itemType == "note") {
+            // Check if this was the first note found
+            notesFound += 1;
+        }
+
+        gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
+        useItem = false;
+
+    }
 
     if (!(overItem)) {
         UIPtr->setOverItem(false);
@@ -279,7 +270,8 @@ void Engine::updateItem() {
             gameWorldPtr->itemsVector[highlightedIter].setOutlineThickness(0.f);
             highlightedIter = -1;
         }
-    } 
+    }
+
 }
 
 void Engine::modifySpeedIfObstacles() {
@@ -321,8 +313,8 @@ void Engine::updateSanity(bool isMeditating) {
     std::cout << "Curr sanity: " << UIPtr->getBarCurrent("sanity").x << std::endl;
     if (!isMeditating) {
         UIPtr->setStatusMeditating(false);
-        if (sanityTimer > 3) {
-            UIPtr->setSanityBar(-6);
+        if (sanityTimer > 6) {
+            UIPtr->setSanityBar(-3);
             sanityTimer = 0;
         }
     } else {
@@ -470,7 +462,12 @@ void Engine::updateLog() {
     if (logMessages.size()) {
         UIPtr->setLogMessage(true, logMessages[0]);
         if (logTimer > 5.f) {
-            logMessages.erase(logMessages.begin());
+
+            if (logMessages[0] == DataSettings::outOfBoundsString) {
+                logMessages.clear();
+            } else {
+                logMessages.erase(logMessages.begin());
+            }
             logTimer = 0;
         }
     } else {
@@ -484,6 +481,7 @@ void Engine::updateUI() {
     updateHiding(hidingActivated, overHideable, hideable);
     updateUIActivityLevel(statusStill, statusWalking, statusRunning);
     updateLog();
+    UIPtr->setNotesFound(notesFound);
 }
 
 void Engine::updateLight() {
@@ -573,9 +571,9 @@ void Engine::render() {
     fogPtr1->clear();
     fogPtr1->draw(*lightPtr);
     fogPtr1->display();
-    fogPtr2->clear();
-    fogPtr2->draw(*lightPtr);
-    fogPtr2->display();
+    // fogPtr2->clear();
+    // fogPtr2->draw(*lightPtr);
+    // fogPtr2->display();
 
     window->clear(CustomColors::groundColor);
 
@@ -585,7 +583,7 @@ void Engine::render() {
     renderObjects(*this->window);
 
     window->draw(*fogPtr1);
-    window->draw(*fogPtr2);
+    // window->draw(*fogPtr2);
     window->draw(player);
 
     // for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
