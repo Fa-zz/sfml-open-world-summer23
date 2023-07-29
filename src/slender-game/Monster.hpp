@@ -4,5 +4,7 @@
 
 class Monster {
 private:
+    
 public:
+
 };
