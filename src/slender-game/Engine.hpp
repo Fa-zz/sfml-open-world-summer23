@@ -103,6 +103,7 @@ private:
     void initLight();
     void generatePlayerPosition();
     void initPlayer();
+    void initMonster();
     void initObjects();
     void initUI();
     void initView();

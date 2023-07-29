@@ -19,8 +19,8 @@ namespace DataSettings {
     inline const float lightRangeOff = 200.f;
 
     // MONSTER DATA
-    inline const int lowerBound = 10; //80
-    inline const int upperBound = 15; //100
+    inline const int lowerBound = 80; //80
+    inline const int upperBound = 100; //100
 
     // GENERATING OBJECTS DATA
     inline const int numTrees = (900)*1;

@@ -78,6 +78,10 @@ void Engine::initPlayer() {
     }
 }
 
+void Engine::initMonster() {
+    
+}
+
 void Engine::initObjects() {
     gameWorldPtr = new World();
 
@@ -586,9 +590,6 @@ void Engine::updateMonster() {
         nextAppearanceTimer = 0;
         appearanceHappensAt = 0;
     }
-    // } else if (!inAppearance) {
-    //     UIPtr->setMonsterText(false, false);
-    // }
 
     if (inAppearance) {
         if (appearanceLogMessage) {
@@ -622,6 +623,7 @@ void Engine::updateMonster() {
         playAppearanceMusic = false;
         playGhostlyWhispers = false;
         appearanceHideTimer = 0;
+        checkedInFound = false;
     }
 
     if (inFound && (!inAppearance)) {
@@ -632,7 +634,7 @@ void Engine::updateMonster() {
 
 void Engine::update() {
     pollEvents();
-    updateViewOffset();
+    // updateViewOffset();
     updatePlayer();
     handleBreath();
 
