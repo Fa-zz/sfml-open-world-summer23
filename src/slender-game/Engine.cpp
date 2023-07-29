@@ -11,8 +11,6 @@ void Engine::initWindow() {
 void Engine::initVars() {
     gameAreaSize = sf::Vector2f(DataSettings::gameWorldSizeX, DataSettings::gameWorldSizeY);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
-    meditateActivated = 0;
-    hidingActivated = false;
     leftHiding = false;
     flashlightOn = false;
     clickedFlashlight = flashlightOn;
@@ -129,11 +127,11 @@ void Engine::pollEvents() {
             flashlightOn = (!flashlightOn);
         }
         if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::M) {
-            meditateActivated = (!meditateActivated);
+            playerPtr->setMeditateActivated((!playerPtr->getMeditateActivated()));
         }
-        if ((overHideable) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Q) {
-            hidingActivated = (!hidingActivated);
-        }
+        // if ((overHideable) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Q) {
+        //     hidingActivated = (!hidingActivated);
+        // }
         if ((overItem) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::E) {
             useItem = (!useItem);
         }
@@ -152,7 +150,7 @@ void Engine::updateViewOffset() {
 void Engine::updateItem() {
     overItem = false;
     for (auto iter = 0; iter < gameWorldPtr->itemsVector.size(); ++iter) {
-        if (player.getGlobalBounds().intersects(gameWorldPtr->itemsVector[iter].getGlobalBounds())) {
+        if (playerPtr->getPlayerGlobalBounds().intersects(gameWorldPtr->itemsVector[iter].getGlobalBounds())) {
             gameWorldPtr->itemsVector[iter].setOutlineColor(sf::Color::Yellow);
             gameWorldPtr->itemsVector[iter].setOutlineThickness(5.f);
             highlightedIter = iter;
@@ -221,100 +219,83 @@ void Engine::updateItem() {
 
 }
 
-void Engine::updateSanity(bool isMeditating) {
-    std::cout << "Curr sanity: " << UIPtr->getBarCurrent("sanity").x << std::endl;
-    if (!isMeditating) {
-        UIPtr->setStatusMeditating(false);
-        if (sanityTimer > 3) {
-            UIPtr->setSanityBar(-6);
-            sanityTimer = 0;
-        }
-    } else {
-        UIPtr->setStatusMeditating(true);
-        if (sanityTimer > 4) {
-            UIPtr->setSanityBar(30);
-            sanityTimer = 0;
-        }
-    }        
-}
+// void Engine::handleBreath() {
+//     float breathCurrent = UIPtr->getBarCurrent("breath").x;
+//     float breathMax = UIPtr->getBarCurrent("breath").y;
+//     // std::cout << "breath current: " << breathCurrent << " breath max: " << breathMax << std::endl;
 
-void Engine::handleBreath() {
-    float breathCurrent = UIPtr->getBarCurrent("breath").x;
-    float breathMax = UIPtr->getBarCurrent("breath").y;
-    // std::cout << "breath current: " << breathCurrent << " breath max: " << breathMax << std::endl;
+//     if (statusRunning || (hidingActivated && hideable == 2) || breathCurrent < breathMax) {
+//         UIPtr->setDisplayBreathBar(true);
+//         isBreathing = true;
+//         if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent) {
+//             if (breathTimer > 1) {
+//                 UIPtr->setBreathBar(-30);
+//                 breathTimer = 0;
+//             }
+//         } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent)) {
+//             if (breathTimer > 3) {
+//                 UIPtr->setHealthBar(-12);
+//                 breathTimer = 0;
+//             }
+//         } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax) {
+//             if (breathTimer > 4) {
+//                 UIPtr->setBreathBar(12);
+//                 breathTimer = 0;
+//             }
+//         } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax) {
+//             if (breathTimer > 2) {
+//                 UIPtr->setBreathBar(30);
+//                 breathTimer = 0;
+//             }
+//         }
+//     } else if (breathCurrent == breathMax) {
+//         isBreathing = false;
+//         UIPtr->setDisplayBreathBar(false);
+//     }
+// }
 
-    if (statusRunning || (hidingActivated && hideable == 2) || breathCurrent < breathMax) {
-        UIPtr->setDisplayBreathBar(true);
-        isBreathing = true;
-        if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent) {
-            if (breathTimer > 1) {
-                UIPtr->setBreathBar(-30);
-                breathTimer = 0;
-            }
-        } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent)) {
-            if (breathTimer > 3) {
-                UIPtr->setHealthBar(-12);
-                breathTimer = 0;
-            }
-        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax) {
-            if (breathTimer > 4) {
-                UIPtr->setBreathBar(12);
-                breathTimer = 0;
-            }
-        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax) {
-            if (breathTimer > 2) {
-                UIPtr->setBreathBar(30);
-                breathTimer = 0;
-            }
-        }
-    } else if (breathCurrent == breathMax) {
-        isBreathing = false;
-        UIPtr->setDisplayBreathBar(false);
-    }
-}
+// void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable) {
+//     if (!overHideable)
+//         UIPtr->setOverHideable(false);
 
-void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable) {
-    if (!overHideable)
-        UIPtr->setOverHideable(false);
+//     if (!hidingActivated) {
+//         UIPtr->setStatusHiding(false);
+//         player.setFillColor(playerSkinTone);
+//         if (leftHiding) {
+//             flashlightOn = true;
+//             leftHiding = false;
+//         }
+//     }
 
-    if (!hidingActivated) {
-        UIPtr->setStatusHiding(false);
-        player.setFillColor(playerSkinTone);
-        if (leftHiding) {
-            flashlightOn = true;
-            leftHiding = false;
-        }
-    }
-
-    if (!hidingActivated && overHideable) {
-        UIPtr->setOverHideable(true);
-        UIPtr->drawOverHideableText(hideable);
-    }
+//     if (!hidingActivated && overHideable) {
+//         UIPtr->setOverHideable(true);
+//         UIPtr->drawOverHideableText(hideable);
+//     }
     
-    if (hidingActivated) {
-        UIPtr->setOverHideable(false);
-        UIPtr->setStatusHiding(true);
-        player.setFillColor(CustomColors::invisible);
-        flashlightOn = false;
-        leftHiding = true;
-    }
-}
+//     if (hidingActivated) {
+//         UIPtr->setOverHideable(false);
+//         UIPtr->setStatusHiding(true);
+//         player.setFillColor(CustomColors::invisible);
+//         flashlightOn = false;
+//         leftHiding = true;
+//     }
+// }
 
-void Engine::updateUIActivityLevel(bool statusStill, bool statusWalking, bool statusRunning) {
-    std::string activity;
-    if (statusStill) {
-        activity = "Still";
-    } else if (statusWalking) {
-        activity = "Walking";
-    } else if (statusRunning) {
-        activity = "Running";
-    }
-    UIPtr->setStatusActivityLevel(activity);
-}
+// void Engine::updateActivityLevel(bool statusStill, bool statusWalking, bool statusRunning) {
+//     std::string activity;
+//     if (statusStill) {
+//         activity = "Still";
+//     } else if (statusWalking) {
+//         activity = "Walking";
+//     } else if (statusRunning) {
+//         activity = "Running";
+//     }
+//     UIPtr->setStatusActivityLevel(activity);
+// }
 
 // TODO: move player collision stuff to its own function
 void Engine::updatePlayer() {
-
+    playerPtr->updatePlayer();
 }
 
 void Engine::updateLog() {
@@ -345,17 +326,22 @@ void Engine::updateLog() {
 }
 
 void Engine::updateUI() {
-    updateSanity(meditateActivated);
-    updateHiding(hidingActivated, overHideable, hideable);
-    updateUIActivityLevel(statusStill, statusWalking, statusRunning);
+    UIPtr->setStatusMeditating(playerPtr->getMeditateActivated());
+    UIPtr->setSanityBar(playerPtr->getSanity());
+    // updateSanity(playerPtr->getMeditateActivated());
+    // updateHiding(playerPtr->getHiding()[0], playerPtr->getHiding()[1], playerPtr->getHideable());
+    // updateActivityLevel(playerPtr->getStatus()[0], playerPtr->getStatus()[1], playerPtr->getStatus()[2]);
     updateLog();
     UIPtr->setNotesFound(notesFound);
 }
 
 void Engine::updateLight() {
     // Calculate the midpoint of the circle, then set lightPtr equal to
-    circlePosition = player.getPosition();
-    float circleRadius = player.getRadius();
+    // circlePosition = player.getPosition();
+    // float circleRadius = player.getRadius();
+    circlePosition = playerPtr->getPlayer().getPosition();
+    float circleRadius = playerPtr->getPlayer().getRadius();
+
     playerMidpoint = sf::Vector2f(circlePosition.x + circleRadius, circlePosition.y + circleRadius);
     lightPtr->setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
 
@@ -399,84 +385,84 @@ void Engine::updateAudio() {
     }
 }
 
-void Engine::updateMonster() {
-    if (!inAppearance && !inFound)
-        UIPtr->setMonsterText(false, false);
+// void Engine::updateMonster() {
+//     if (!inAppearance && !inFound)
+//         UIPtr->setMonsterText(false, false);
 
-    if (!(appearanceHappensAt)) {
-        int lowerBound = DataSettings::lowerBound - (10*notesFound);
-        int upperBound = DataSettings::upperBound - (10*notesFound);
-        appearanceHappensAt = gameWorldPtr->randomInt(lowerBound, upperBound);
-    }
-    std::cout << "Appearance happens at: " << appearanceHappensAt << std::endl;
+//     if (!(appearanceHappensAt)) {
+//         int lowerBound = DataSettings::lowerBound - (10*notesFound);
+//         int upperBound = DataSettings::upperBound - (10*notesFound);
+//         appearanceHappensAt = gameWorldPtr->randomInt(lowerBound, upperBound);
+//     }
+//     std::cout << "Appearance happens at: " << appearanceHappensAt << std::endl;
 
-    if (nextAppearanceTimer > appearanceHappensAt) {
-        int appearanceChance = gameWorldPtr->randomInt(0,100);
-        if (UIPtr->getBarCurrent("sanity").x > 300 && UIPtr->getBarCurrent("sanity").x > 210) {
-            appearanceChance -= 25;
-        } else if (UIPtr->getBarCurrent("sanity").x <= 210 && UIPtr->getBarCurrent("sanity").x >= 150) {
-            appearanceChance += 50;
-        } else if (UIPtr->getBarCurrent("sanity").x <= 150) {
-            appearanceChance += 75;
-        }
-        for (int i = 0; i < notesFound; i++)
-            appearanceChance += 25;
+//     if (nextAppearanceTimer > appearanceHappensAt) {
+//         int appearanceChance = gameWorldPtr->randomInt(0,100);
+//         if (UIPtr->getBarCurrent("sanity").x > 300 && UIPtr->getBarCurrent("sanity").x > 210) {
+//             appearanceChance -= 25;
+//         } else if (UIPtr->getBarCurrent("sanity").x <= 210 && UIPtr->getBarCurrent("sanity").x >= 150) {
+//             appearanceChance += 50;
+//         } else if (UIPtr->getBarCurrent("sanity").x <= 150) {
+//             appearanceChance += 75;
+//         }
+//         for (int i = 0; i < notesFound; i++)
+//             appearanceChance += 25;
 
-        std::cout << "APPEARANCE CHECK, appearance chance: " << appearanceChance << std::endl;
-        if (appearanceChance >= 75) {
-            inAppearance = true;
-            appearanceLogMessage = true;
-        }
-        nextAppearanceTimer = 0;
-        appearanceHappensAt = 0;
-    }
+//         std::cout << "APPEARANCE CHECK, appearance chance: " << appearanceChance << std::endl;
+//         if (appearanceChance >= 75) {
+//             inAppearance = true;
+//             appearanceLogMessage = true;
+//         }
+//         nextAppearanceTimer = 0;
+//         appearanceHappensAt = 0;
+//     }
 
-    if (inAppearance) {
-        if (appearanceLogMessage) {
-            logMessages.push_back(DataSettings::appearanceString);
-            appearanceLogMessage = false;
-        }
-        UIPtr->setMonsterText(true, false);
+//     if (inAppearance) {
+//         if (appearanceLogMessage) {
+//             logMessages.push_back(DataSettings::appearanceString);
+//             appearanceLogMessage = false;
+//         }
+//         UIPtr->setMonsterText(true, false);
 
-        if (appearanceHideTimer > 15 && (!checkedInFound)) {
-            appearanceHideTimer = 0;
-            int foundChance = 0;
-            if (hidingActivated && hideable == 2) {
-                foundChance = gameWorldPtr->randomInt(1,5);
-                if (foundChance == 1)
-                    inFound = true;
-            } else if (hidingActivated && hideable == 1) {
-                foundChance = gameWorldPtr->randomInt(1,3);
-                if (foundChance == 1)
-                    inFound = true;
-            } else if (!hidingActivated) {
-                foundChance = gameWorldPtr->randomInt(1, 11);
-                if (foundChance > 1)
-                    inFound = true;
-            }
-            checkedInFound = true;
-        }
-    }
+//         if (appearanceHideTimer > 15 && (!checkedInFound)) {
+//             appearanceHideTimer = 0;
+//             int foundChance = 0;
+//             if (hidingActivated && hideable == 2) {
+//                 foundChance = gameWorldPtr->randomInt(1,5);
+//                 if (foundChance == 1)
+//                     inFound = true;
+//             } else if (hidingActivated && hideable == 1) {
+//                 foundChance = gameWorldPtr->randomInt(1,3);
+//                 if (foundChance == 1)
+//                     inFound = true;
+//             } else if (!hidingActivated) {
+//                 foundChance = gameWorldPtr->randomInt(1, 11);
+//                 if (foundChance > 1)
+//                     inFound = true;
+//             }
+//             checkedInFound = true;
+//         }
+//     }
 
-    if ((inAppearance) && (checkedInFound) && !(audioPtr->getGhostlyWhispersStatus() == sf::Music::Playing)) {
-        inAppearance = false;
-        playAppearanceMusic = false;
-        playGhostlyWhispers = false;
-        appearanceHideTimer = 0;
-        checkedInFound = false;
-    }
+//     if ((inAppearance) && (checkedInFound) && !(audioPtr->getGhostlyWhispersStatus() == sf::Music::Playing)) {
+//         inAppearance = false;
+//         playAppearanceMusic = false;
+//         playGhostlyWhispers = false;
+//         appearanceHideTimer = 0;
+//         checkedInFound = false;
+//     }
 
-    if (inFound && (!inAppearance)) {
-        UIPtr->setMonsterText(false, true);
-    }
+//     if (inFound && (!inAppearance)) {
+//         UIPtr->setMonsterText(false, true);
+//     }
 
-}
+// }
 
 void Engine::update() {
     pollEvents();
     // updateViewOffset();
     updatePlayer();
-    handleBreath();
+    // handleBreath();
 
     fps.update();
     std::ostringstream ss;
@@ -484,7 +470,9 @@ void Engine::update() {
     getElapsed = clock.getElapsedTime();
     totalTime += getElapsed.asSeconds();
     currentTime = clock.restart().asSeconds();
-    sanityTimer += currentTime;
+
+    playerPtr->updateSanityTimer(currentTime);
+
     if (flashlightOn)
         flashlightBatteryTimer += currentTime;
     if (isBreathing) {
@@ -509,12 +497,13 @@ void Engine::update() {
     updateLight();
     updateItem();
     updateAudio();
-    updateMonster();
+    // updateMonster();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
+    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << playerPtr->getSanityTimer() <<  std::endl;
     // std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
-    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
-    std::cout << "Player pos x: " << player.getPosition().x << " Player pos y: " << player.getPosition().y << std::endl;
+    // std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
+    // std::cout << "Player pos x: " << player.getPosition().x << " Player pos y: " << player.getPosition().y << std::endl;
     std::cout << "inAppearance: " << inAppearance << " inFound: " << inFound << std::endl;
 }
 
@@ -528,7 +517,7 @@ void Engine::renderObjects(sf::RenderTarget& target) {
 }
 
 void Engine::render() {
-    mainView.setCenter(player.getPosition()+viewOffset);
+    mainView.setCenter(playerPtr->getPlayer().getPosition()+viewOffset);
     // Draw
 
     // Draw light, fog
@@ -548,7 +537,7 @@ void Engine::render() {
 
     window->draw(*fogPtr1);
     // window->draw(*fogPtr2);
-    window->draw(player);
+    window->draw(playerPtr->getPlayer());
 
     // for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
     //     if (lightPtr->getGlobalBounds().contains(gameWorldPtr->bushesVector[iter].getOrigin()))

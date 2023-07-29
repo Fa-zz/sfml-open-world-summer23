@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <array>
 
 #include "World.hpp"
 #include "Data.hpp"
@@ -15,10 +16,17 @@ private:
     World* m_gameWorldPtr;
     sf::FloatRect* m_gameAreaBoundsPtr;
 
-    // Sanity, hiding
-    bool meditateActivated, hidingActivated;
+    // Sanity, timer
+    bool meditateActivated;
+    int sanity;
+    float sanityTimer;
+
+    // Hiding, health
+    bool hidingActivated;
     bool overHideable;
     int hideable;
+    int health;
+    int difference;
 
     // Movement vars
     bool outOfBounds;
@@ -42,8 +50,25 @@ public:
     Player(World* gameWorldPtr, sf::FloatRect* gameAreaBoundsPtr);
 
     // Update
+    void updateSanityTimer(float currentTime);  // Called in Engine
+    void updateSanity(bool isMeditating);
     void updatePlayer();
 
     // Getters
+    sf::FloatRect getPlayerGlobalBounds();
+    bool getActivity();
     bool getPlayerOutOfBounds();
+    bool getMeditateActivated();
+    std::array<bool, 2> getHiding(); // Returns hidingActivated and overHideable
+    int getHideable();
+    std::array<bool, 3> getStatus();
+    int getSanity();
+    sf::CircleShape getPlayer();
+
+    // Getters - timers
+    float getSanityTimer();
+
+    // Setters
+    void setMeditateActivated(bool meditating);
+
 };

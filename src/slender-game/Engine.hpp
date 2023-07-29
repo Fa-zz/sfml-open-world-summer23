@@ -20,19 +20,15 @@ private:
     // sf::Vector2f playerMovement;
     // sf::Vector2f playerNewPosition;
 
-    // Player midpoint vars
-    sf::Vector2f playerMidpoint;
-    sf::Vector2f circlePosition;
+    // // Player collision vars
+    // sf::FloatRect playerNewBounds;
+    // sf::FloatRect collidingWith;
 
-    // Player collision vars
-    sf::FloatRect playerNewBounds;
-    sf::FloatRect collidingWith;
-
-    // Mouse vars
-    sf::Vector2i mousePosWindow;
-    sf::Vector2f mousePosView;
-    bool mouseHeld;
-    sf::CircleShape visibleToPlayer;
+    // // Mouse vars
+    // sf::Vector2i mousePosWindow;
+    // sf::Vector2f mousePosView;
+    // bool mouseHeld;
+    // sf::CircleShape visibleToPlayer;
 
     // Window, view, time
     sf::RenderWindow* window;
@@ -40,14 +36,16 @@ private:
     // float viewSpeed;
     sf::Clock clock;
     float currentTime;
-    float sanityTimer;
+    // float sanityTimer;
     float breathTimer;
     float flashlightBatteryTimer;
     sf::Time getElapsed;
     float totalTime;
     FPS fps;
 
-    // Light, battery
+    // Light, flashlight
+    sf::Vector2f playerMidpoint;
+    sf::Vector2f circlePosition;
     candle::RadialLight* lightPtr;
     candle::LightingArea* fogPtr1;
     candle::LightingArea* fogPtr2;
@@ -80,13 +78,13 @@ private:
     bool clickedFlashlight;
 
     // Controls
-    bool meditateActivated;
-    bool meditateButtonHeld;
+    // bool meditateActivated;
+    // bool meditateButtonHeld;
     bool flashlightOn;
     bool hidingActivated;
     bool isBreathing;
     bool leftHiding;
-    bool statusRunning, statusWalking, statusStill;
+    // bool statusRunning, statusWalking, statusStill;
     bool outOfBreath;
 
     bool overItem;
@@ -118,24 +116,19 @@ public:
 
     void updateViewOffset();
 
-    void playerActionsMeditate();
-    void playerOutOfBoundsAdjust();
-    bool playerObjectCollision(sf::CircleShape& playerArg);
     void updateItem();
-    void modifySpeedIfObstacles();
-    void updatePlayerMovement(float modifier);
 
-    void updateSanity(bool isMeditating);
-    void handleBreath();
-    void updateHiding(bool hidingActivated, bool overHideable, int hideable);
-    void updateUIActivityLevel(bool statusStill, bool statusWalking, bool statusRunning);
+    // void updateSanity(bool isMeditating);
+    // void handleBreath();
+    // void updateHiding(bool hidingActivated, bool overHideable, int hideable);
+    // void updateActivityLevel(bool statusStill, bool statusWalking, bool statusRunning);
     void updatePlayer();
     void updateLog();
     void updateUI();
     void updateLight();
     void updateAudio();
 
-    void updateMonster();
+    // void updateMonster();
 
     void update();
 

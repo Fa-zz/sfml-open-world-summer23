@@ -18,10 +18,10 @@ void GameUI::initFont() {
         healthBarText.setFont(font);
         sanityBarText.setFont(font);
         breathBarText.setFont(font);
-        statusMeditatingText.setFont(font);
-        statusHidingText.setFont(font);
+        meditatingText.setFont(font);
+        hidingText.setFont(font);
         overHideableText.setFont(font);
-        statusActivityLevelText.setFont(font);
+        activityText.setFont(font);
         batteryText.setFont(font);
         overItemText.setFont(font);
         logText.setFont(font);
@@ -97,16 +97,16 @@ void GameUI::drawOverItemText(std::string itemType) {
 }
 
 void GameUI::drawStatusTexts() {
-    statusMeditatingText.setString("Meditating");
-    statusMeditatingText.setCharacterSize(40);
-    statusMeditatingText.setPosition(100.f,350.f);
+    meditatingText.setString("Meditating");
+    meditatingText.setCharacterSize(40);
+    meditatingText.setPosition(100.f,350.f);
 
-    statusHidingText.setString("Hiding");
-    statusHidingText.setCharacterSize(40);
-    statusHidingText.setPosition(100.f,450.f);
+    hidingText.setString("Hiding");
+    hidingText.setCharacterSize(40);
+    hidingText.setPosition(100.f,450.f);
 
-    statusActivityLevelText.setCharacterSize(40);
-    statusActivityLevelText.setPosition(100.f, 550.f);
+    activityText.setCharacterSize(40);
+    activityText.setPosition(100.f, 550.f);
 }
 
 // 120, 140 to draw tools
@@ -148,13 +148,13 @@ sf::Vector2f GameUI::getBarCurrent(std::string bar) {
     return sf::Vector2f(current, max);
 }
 
-void GameUI::setSanityBar(int sanityChange) {
-    if (!(sanityBarTop.getSize().x + sanityChange < 0) && !(sanityBarTop.getSize().x + sanityChange > sanityBarBottom.getSize().x))
-        sanityBarTop.setSize(sf::Vector2f(sanityBarTop.getSize().x + sanityChange, sanityBarTop.getSize().y));
+void GameUI::setSanityBar(int sanity) {
+    if (!(sanity < 0) && !(sanity > sanityBarBottom.getSize().x))
+        sanityBarTop.setSize(sf::Vector2f(sanity, sanityBarTop.getSize().y));
 
-    if (sanityBarTop.getSize().x + sanityChange > sanityBarBottom.getSize().x)
+    if (sanity > sanityBarBottom.getSize().x)
         sanityBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
-    if (sanityBarTop.getSize().x + sanityChange < 0)
+    if (sanity < 0)
         sanityBarTop.setSize(sf::Vector2f(0, barSizeDefaultY));
 }
 
@@ -199,8 +199,8 @@ void GameUI::setDisplayBreathBar(bool display) {
     renderBreathBar = display;
 }
 
-void GameUI::setStatusActivityLevel(std::string level) {
-    statusActivityLevelText.setString(level);
+void GameUI::setActivity(std::string activity) {
+    activityText.setString(activity);
 }
 
 void GameUI::setBattery(std::string battery, sf::Color color) {
@@ -255,12 +255,12 @@ void GameUI::renderUI(sf::RenderTarget& target) {
     target.draw(sanityBarText);
 
     if (isMeditating)
-        target.draw(statusMeditatingText);
+        target.draw(meditatingText);
 
     if (isHiding)
-        target.draw(statusHidingText);
+        target.draw(hidingText);
 
-    target.draw(statusActivityLevelText);
+    target.draw(activityText);
 
     if (renderHideableText)
         target.draw(overHideableText);

@@ -78,18 +78,17 @@ void Player::updatePlayerMovement(float modifier) {
 }
 
 void Player::playerOutOfBoundsAdjust() {
-    // logMessages.push_back(DataSettings::outOfBoundsString);
     outOfBounds = true;
     // Adjust player position if it exceeds the game area bounds
-    if (playerNewPosition.x < gameAreaBoundsPtr->left)
-        playerNewPosition.x = gameAreaBoundsPtr->left;
-    else if (playerNewPosition.x > gameAreaBoundsPtr->left + gameAreaBoundsPtr->width)
-        playerNewPosition.x = gameAreaBoundsPtr->left + gameAreaBoundsPtr->width;
+    if (playerNewPosition.x < m_gameAreaBoundsPtr->left)
+        playerNewPosition.x = m_gameAreaBoundsPtr->left;
+    else if (playerNewPosition.x > m_gameAreaBoundsPtr->left + m_gameAreaBoundsPtr->width)
+        playerNewPosition.x = m_gameAreaBoundsPtr->left + m_gameAreaBoundsPtr->width;
 
-    if (playerNewPosition.y < gameAreaBoundsPtr->top)
-        playerNewPosition.y = gameAreaBoundsPtr->top;
-    else if (playerNewPosition.y > gameAreaBoundsPtr->top + gameAreaBoundsPtr->height)
-        playerNewPosition.y = gameAreaBoundsPtr->top + gameAreaBoundsPtr->height;
+    if (playerNewPosition.y < m_gameAreaBoundsPtr->top)
+        playerNewPosition.y = m_gameAreaBoundsPtr->top;
+    else if (playerNewPosition.y > m_gameAreaBoundsPtr->top + m_gameAreaBoundsPtr->height)
+        playerNewPosition.y = m_gameAreaBoundsPtr->top + m_gameAreaBoundsPtr->height;
 }
 
 // INIT FUNCS
@@ -110,6 +109,9 @@ void Player::initVars() {
     playerSpeedModifier = 0; 
     playerMoveSpeed = DataSettings::playerMoveSpeedWalk;
     playerMovement = playerNewPosition = sf::Vector2f(0.f,0.f);
+    outOfBounds = false;
+    sanity = health = 300;
+    sanityTimer = 0;
 
 }
 
@@ -119,13 +121,42 @@ Player::Player(World* gameWorldPtr, sf::FloatRect* gameAreaBoundsPtr):m_gameWorl
     initVars();
 }
 
-// UPDATE PLAYER
+// UPDATE FUNCS
+void Player::updateSanityTimer(float currentTime) {
+    sanityTimer += currentTime;
+}
+
+void Player::updateSanity(bool isMeditating) {
+    // std::cout << "Curr sanity: " << UIPtr->getBarCurrent("sanity").x << std::endl;
+    if (sanity < 0) {
+        sanity = 0;
+    } else if (sanity > 300) {
+        sanity = 300;
+    }
+
+    difference = 0;
+    std::cout << "Curr sanity (player): " << sanity << std::endl;
+    if (!isMeditating) {
+        if (sanityTimer > 3) {
+            difference = -6;
+            sanityTimer = 0;
+        }
+    } else if (isMeditating) {
+        if (sanityTimer > 4) {
+            difference = 30;
+            sanityTimer = 0;
+        }
+    }
+    sanity += difference;
+}
+
 void Player::updatePlayer() {
     // std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
-    statusStill = false;
-    statusWalking = false;
-    statusRunning = false;
+    statusStill = statusWalking = statusRunning = false;
+    outOfBounds = false;
     playerMovement = sf::Vector2f(0,0);
+
+    updateSanity(meditateActivated);
 
     playerSpeedModifier = 1;
     if (meditateActivated || hidingActivated) {
@@ -178,6 +209,18 @@ void Player::updatePlayer() {
 }
 
 // GETTERS
-bool Player::getPlayerOutOfBounds() {
-    return outOfBounds;
+sf::FloatRect Player::getPlayerGlobalBounds() { return player.getGlobalBounds(); }
+bool Player::getPlayerOutOfBounds() { return outOfBounds; }
+bool Player::getMeditateActivated() { return meditateActivated; }
+std::array<bool, 2> Player::getHiding() { return {hidingActivated, overHideable}; }
+int Player::getHideable() { return hideable; }
+std::array<bool, 3> Player::getStatus() { return {statusStill, statusWalking, statusRunning}; }
+int Player::getSanity() { return sanity; } 
+sf::CircleShape Player::getPlayer() { return player; }
+
+float Player::getSanityTimer() { return sanityTimer; }
+
+// SETTERS
+void Player::setMeditateActivated(bool meditating) {
+    meditateActivated = meditating;
 }

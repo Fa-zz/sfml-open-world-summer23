@@ -30,10 +30,10 @@ private:
     sf::Text overHideableText;
     sf::Text overItemText;
 
-    sf::Text statusMeditatingText;
-    sf::Text statusHidingText;
+    sf::Text meditatingText;
+    sf::Text hidingText;
 
-    sf::Text statusActivityLevelText;
+    sf::Text activityText;
 
     // BAR VARS
     float barSizeDefaultX, barSizeDefaultY;
@@ -73,7 +73,7 @@ public:
 
     sf::Vector2f getBarCurrent(std::string bar);
 
-    void setSanityBar(int sanityChange);
+    void setSanityBar(int sanity);
     void setStatusMeditating(bool meditating);
 
     void setOverHideable(bool over);
@@ -83,7 +83,7 @@ public:
     void setBreathBar(int breathChange);
     void setDisplayBreathBar(bool display);
 
-    void setStatusActivityLevel(std::string level);
+    void setActivity(std::string activity);
 
     void setHealthBar(int healthChange);
 
