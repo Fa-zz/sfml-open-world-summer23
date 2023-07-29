@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Player.hpp"
 #include "World.hpp"
 #include "GameUI.hpp"
 #include "GameAudio.hpp"
@@ -14,10 +15,10 @@ private:
     sf::FloatRect* gameAreaBoundsPtr;
 
     // Player movement vars
-    float playerSpeedModifier;
-    float playerMoveSpeed;
-    sf::Vector2f playerMovement;
-    sf::Vector2f playerNewPosition;
+    // float playerSpeedModifier;
+    // float playerMoveSpeed;
+    // sf::Vector2f playerMovement;
+    // sf::Vector2f playerNewPosition;
 
     // Player midpoint vars
     sf::Vector2f playerMidpoint;
@@ -54,8 +55,7 @@ private:
     int flashlightBattery;
 
     // Player
-    sf::CircleShape player;
-    sf::Color playerSkinTone;
+    Player* playerPtr;
 
     // Notes and Monster
     int notesFound;
@@ -83,9 +83,6 @@ private:
     bool meditateActivated;
     bool meditateButtonHeld;
     bool flashlightOn;
-    bool overHideable;
-    int hideable;               // Where 1 is bush, 2 is mud
-    bool overRock;
     bool hidingActivated;
     bool isBreathing;
     bool leftHiding;
@@ -101,7 +98,6 @@ private:
     void initWindow();
     void initVars();
     void initLight();
-    void generatePlayerPosition();
     void initPlayer();
     void initMonster();
     void initObjects();

@@ -11,20 +11,12 @@ void Engine::initWindow() {
 void Engine::initVars() {
     gameAreaSize = sf::Vector2f(DataSettings::gameWorldSizeX, DataSettings::gameWorldSizeY);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
-    playerMoveSpeed = DataSettings::playerMoveSpeedWalk;
-    playerSkinTone = CustomColors::skinTone;
-    playerNewPosition = sf::Vector2f(0,0);
     meditateActivated = 0;
     hidingActivated = false;
     leftHiding = false;
     flashlightOn = false;
     clickedFlashlight = flashlightOn;
-    overHideable = false;
-    statusStill = false; 
-    statusWalking = false;
-    statusRunning = false;
     breathTimer = 0;
-    overRock = false;
     overItem = false;
     useItem = false;
     highlightedIter = -1;
@@ -60,26 +52,12 @@ void Engine::initLight() {
     flashlightBatteryTimer = 0;
 }
 
-void Engine::generatePlayerPosition() {
-    float x = gameWorldPtr->randomFloat(0.f, gameAreaSize.x);
-    float y = gameWorldPtr->randomFloat(0.f, gameAreaSize.y);
-    sf::Vector2f playerCoords = sf::Vector2f(x, y);
-    player.setPosition(playerCoords);
-    std::cout << "PLAYER COORDS SET AND GENERATED: " << playerCoords.x << " " << playerCoords.y << std::endl;
-}
-
 void Engine::initPlayer() {
-    player.setRadius(DataSettings::playerRadiusDefault);
-    player.setFillColor(playerSkinTone);
-
-    generatePlayerPosition();
-    while (playerObjectCollision(player)) {
-        generatePlayerPosition();
-    }
+    playerPtr = new Player(gameWorldPtr, gameAreaBoundsPtr);
 }
 
 void Engine::initMonster() {
-    
+
 }
 
 void Engine::initObjects() {
@@ -116,6 +94,7 @@ Engine::~Engine() {
     delete window;
     delete lightPtr;
     delete fogPtr1;
+    delete playerPtr;
     // delete fogPtr2;
     // delete fogPtr3;
     // delete fogPtr4;
@@ -168,60 +147,6 @@ void Engine::updateViewOffset() {
         std::cout << "xOffset: " << randomXOffset << " yOffset: " << randomYOffset << std::endl;
         viewOffset = sf::Vector2f(randomXOffset, randomYOffset);
     }
-}
-
-void Engine::playerOutOfBoundsAdjust() {
-    logMessages.push_back(DataSettings::outOfBoundsString);
-    // Adjust player position if it exceeds the game area bounds
-    if (playerNewPosition.x < gameAreaBoundsPtr->left)
-        playerNewPosition.x = gameAreaBoundsPtr->left;
-    else if (playerNewPosition.x > gameAreaBoundsPtr->left + gameAreaBoundsPtr->width)
-        playerNewPosition.x = gameAreaBoundsPtr->left + gameAreaBoundsPtr->width;
-
-    if (playerNewPosition.y < gameAreaBoundsPtr->top)
-        playerNewPosition.y = gameAreaBoundsPtr->top;
-    else if (playerNewPosition.y > gameAreaBoundsPtr->top + gameAreaBoundsPtr->height)
-        playerNewPosition.y = gameAreaBoundsPtr->top + gameAreaBoundsPtr->height;
-}
-
-bool Engine::playerObjectCollision(sf::CircleShape& playerArg) {
-    sf::FloatRect playerBounds = playerArg.getGlobalBounds();
-
-    float GAP_THRESHOLD = 10.f;
-    for (auto iter = 0; iter < gameWorldPtr->fallenTreesVector.size(); ++iter) {
-        if (playerBounds.intersects(gameWorldPtr->fallenTreesVector[iter].getGlobalBounds()))
-            return true;
-    }
-    for (auto iter = 0; iter < gameWorldPtr->treesVector.size(); ++iter) {
-        sf::FloatRect circleBounds = gameWorldPtr->treesVector[iter].getGlobalBounds();
-        
-        // Calculate the distance between the centers of player and circle
-        sf::Vector2f playerCenter = playerArg.getPosition() + sf::Vector2f(playerArg.getRadius(), playerArg.getRadius());
-        sf::Vector2f circleCenter = gameWorldPtr->treesVector[iter].getPosition() + sf::Vector2f(gameWorldPtr->treesVector[iter].getRadius(), gameWorldPtr->treesVector[iter].getRadius());
-        
-        float distance = std::sqrt(std::pow(playerCenter.x - circleCenter.x, 2) + std::pow(playerCenter.y - circleCenter.y, 2));
-
-        // Check for collision only if the player is close enough to the circle
-        // Adjust the threshold value according to your requirements
-        if (distance <= playerArg.getRadius() + gameWorldPtr->treesVector[iter].getRadius() + GAP_THRESHOLD) {
-            if (playerBounds.intersects(circleBounds)) {
-                return true;  // Collision detected
-            }
-        }
-    }    
-
-    return false;
-}
-
-void Engine::updatePlayerMovement(float modifier) {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        playerMovement.y -= playerMoveSpeed*modifier;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        playerMovement.y += playerMoveSpeed*modifier;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        playerMovement.x -= playerMoveSpeed*modifier;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        playerMovement.x += playerMoveSpeed*modifier;
 }
 
 void Engine::updateItem() {
@@ -293,41 +218,6 @@ void Engine::updateItem() {
             highlightedIter = -1;
         }
     }
-
-}
-
-void Engine::modifySpeedIfObstacles() {
-    overHideable = false;
-    overRock = false;
-    hideable = 0;
-    for (auto iter = 0; iter < gameWorldPtr->shrubsVector.size(); ++iter) {
-        if (player.getGlobalBounds().intersects(gameWorldPtr->shrubsVector[iter].getGlobalBounds())) {
-            playerSpeedModifier -= 0.5;
-            return;
-        }
-    }
-    for (auto iter = 0; iter < gameWorldPtr->bushesVector.size(); ++iter) {
-        if (player.getGlobalBounds().intersects(gameWorldPtr->bushesVector[iter].getGlobalBounds())) {
-            playerSpeedModifier -= 0.5;
-            overHideable = true;
-            hideable = 1;
-            return;
-        }
-    }
-    for (auto iter = 0; iter < gameWorldPtr->mudPatchesVector.size(); ++iter) {
-        if (gameWorldPtr->mudPatchesVector[iter].getGlobalBounds().contains(player.getPosition())) {                
-            playerSpeedModifier -= 0.5;
-            overHideable = true;
-            hideable = 2;
-            return;
-        }        
-    }
-    for (auto iter = 0; iter < gameWorldPtr->rocksVector.size(); ++iter) {
-        if (player.getGlobalBounds().intersects(gameWorldPtr->rocksVector[iter].getGlobalBounds())) {
-            overRock = true;
-        }
-    }
-    return;
 
 }
 
@@ -424,63 +314,13 @@ void Engine::updateUIActivityLevel(bool statusStill, bool statusWalking, bool st
 
 // TODO: move player collision stuff to its own function
 void Engine::updatePlayer() {
-    // std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
-    statusStill = false;
-    statusWalking = false;
-    statusRunning = false;
-    playerMovement = sf::Vector2f(0,0);
 
-    playerSpeedModifier = 1;
-    if (meditateActivated || hidingActivated) {
-        playerSpeedModifier = 0;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-        playerSpeedModifier = 2;
-        statusRunning = true;
-    }
-
-    // Adjust speed given obstacles
-    if (playerSpeedModifier) {
-        modifySpeedIfObstacles();
-    }
-
-    updatePlayerMovement(playerSpeedModifier);
-
-    // If player does not move, player is still
-    if (playerMovement.x == 0 && playerMovement.y == 0) {
-        playerSpeedModifier = 0;
-    } else if (playerSpeedModifier >= 0.5 && playerSpeedModifier <= 1) {
-        statusStill = false;
-        statusWalking = true;
-        statusRunning = false;
-    } else {
-        statusStill = false;
-        statusWalking = false;
-        statusRunning = true;
-    }
-    if (playerSpeedModifier == 0) {
-        statusStill = true;
-        statusWalking = false;
-        statusRunning = false;
-    }
-
-    // Checking if player collides with gameArea or other objects
-    playerNewPosition = player.getPosition() + playerMovement;
-    sf::CircleShape newPlayer = player;
-    newPlayer.setPosition(playerNewPosition);
-
-    // Checking collision between objects and player
-    if (gameAreaBoundsPtr->contains(playerNewPosition) && !playerObjectCollision(newPlayer)) {
-        player.setPosition(playerNewPosition);  // Update the player's position
-    } else {
-        if (!(gameAreaBoundsPtr->contains(playerNewPosition))) {
-            playerOutOfBoundsAdjust();
-        }
-    }
-    
-    // std::cout << "Statusstill: " << statusStill << " Statuswalking: " << statusWalking << " Statusrunning: " << statusRunning << std::endl; 
 }
 
 void Engine::updateLog() {
+    if (!(playerPtr->getPlayerOutOfBounds()))
+        logMessages.push_back(DataSettings::outOfBoundsString);
+
     if (logMessages.size()) {
         sf::Color color;
         if (logMessages[0] == DataSettings::appearanceString) {
