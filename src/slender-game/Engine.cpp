@@ -38,6 +38,7 @@ void Engine::initVars() {
     appearanceLogMessage = false;
     playAppearanceMusic = playGhostlyWhispers = false;
     inFound = checkedInFound = false;
+    viewOffset = sf::Vector2f(0.f,0.f);
 }
 
 void Engine::initLight() {
@@ -153,6 +154,15 @@ void Engine::pollEvents() {
         if ((overItem) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::E) {
             useItem = (!useItem);
         }
+    }
+}
+
+void Engine::updateViewOffset() {
+    if (inFound && !(inAppearance)) {
+        float randomXOffset = gameWorldPtr->randomFloat(-10.f,10.f);
+        float randomYOffset = gameWorldPtr->randomFloat(-10.f,10.f);
+        std::cout << "xOffset: " << randomXOffset << " yOffset: " << randomYOffset << std::endl;
+        viewOffset = sf::Vector2f(randomXOffset, randomYOffset);
     }
 }
 
@@ -614,12 +624,15 @@ void Engine::updateMonster() {
         appearanceHideTimer = 0;
     }
 
-    // if (inFound)
+    if (inFound && (!inAppearance)) {
+        UIPtr->setMonsterText(false, true);
+    }
 
 }
 
 void Engine::update() {
     pollEvents();
+    updateViewOffset();
     updatePlayer();
     handleBreath();
 
@@ -657,7 +670,8 @@ void Engine::update() {
     updateMonster();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
-    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
+    // std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
+    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
     std::cout << "Player pos x: " << player.getPosition().x << " Player pos y: " << player.getPosition().y << std::endl;
     std::cout << "inAppearance: " << inAppearance << " inFound: " << inFound << std::endl;
 }
@@ -672,7 +686,7 @@ void Engine::renderObjects(sf::RenderTarget& target) {
 }
 
 void Engine::render() {
-    mainView.setCenter(player.getPosition());
+    mainView.setCenter(player.getPosition()+viewOffset);
     // Draw
 
     // Draw light, fog

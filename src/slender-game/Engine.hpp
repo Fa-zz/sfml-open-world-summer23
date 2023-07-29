@@ -64,6 +64,8 @@ private:
     float nextAppearanceTimer, appearanceHideTimer;
     int appearanceHappensAt;
     bool checkedInFound, inFound;
+    sf::Vector2f viewOffset;
+    sf::RectangleShape foundOverlay;
 
     // Game UI
     GameUI* UIPtr;
@@ -117,8 +119,7 @@ public:
     // Update functions
     void pollEvents();
 
-    void updateMousePos();
-    void updateMouse();
+    void updateViewOffset();
 
     void playerActionsMeditate();
     void playerOutOfBoundsAdjust();

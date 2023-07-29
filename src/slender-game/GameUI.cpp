@@ -128,7 +128,7 @@ void GameUI::drawNotesFoundText() {
 
 void GameUI::drawMonsterText() {
     monsterText.setCharacterSize(50);
-    monsterText.setPosition(1600.f,450.f);
+    monsterText.setPosition(1550.f,450.f);
 }
 
 //TODO: Change to general bar x and y
@@ -220,10 +220,10 @@ void GameUI::setNotesFound(int numNotesFound) {
 
 void GameUI::setMonsterText(bool appearance, bool found){
     if (appearance) {
-        monsterText.setString("Tracking");
+        monsterText.setString("\tIt is\ntracking you");
         monsterText.setFillColor(sf::Color::Yellow);
     } else if (found) {
-        monsterText.setString("Found you.");
+        monsterText.setString("\nIt found you.");
         monsterText.setFillColor(sf::Color::Red);
     } else if (!(appearance) && !(found)) {
         monsterText.setString("");
