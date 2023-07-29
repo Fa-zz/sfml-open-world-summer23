@@ -2,9 +2,14 @@
  
 Forest of Shapes attributions
 Sounds/Music
-* 8 Night Sound Effects | Royalty Free | No copyright | Copyright Free Ambient | Night Sound Effects 
-https://youtu.be/ZvhQLYPR-hY
-Owl hooting sound sfx
+
+Night music from:
+* https://youtu.be/ZvhQLYPR-hY
+Owl sfx from:
 * https://www.youtube.com/watch?v=3uVzOaxiSyA
-Flashlight click, 
+Flashlight click from:
 * http://www.freesfx.co.uk
+Appearance music from Werra:
+* https://freesound.org/people/Werra/sounds/231562/
+Ghostly whispers sfx from dimbark1:
+* https://freesound.org/people/dimbark1/sounds/316797/

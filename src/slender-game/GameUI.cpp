@@ -26,6 +26,7 @@ void GameUI::initFont() {
         overItemText.setFont(font);
         logText.setFont(font);
         notesFoundText.setFont(font);
+        monsterText.setFont(font);
     }
 }
 
@@ -125,6 +126,11 @@ void GameUI::drawNotesFoundText() {
     notesFoundText.setPosition(0.f,1020.f);
 }
 
+void GameUI::drawMonsterText() {
+    monsterText.setCharacterSize(50);
+    monsterText.setPosition(1600.f,450.f);
+}
+
 //TODO: Change to general bar x and y
 sf::Vector2f GameUI::getBarCurrent(std::string bar) {
     float current;
@@ -199,17 +205,29 @@ void GameUI::setStatusActivityLevel(std::string level) {
 
 void GameUI::setBattery(std::string battery, sf::Color color) {
     batteryText.setString("Battery: " + battery + "%");
-    batteryText.setColor(color);
+    batteryText.setFillColor(color);
 }
 
 void GameUI::setLogMessage(bool display, std::string message, sf::Color color){
     displayToLog = display;
     logText.setString(message);
-    logText.setColor(color);
+    logText.setFillColor(color);
 }
 
 void GameUI::setNotesFound(int numNotesFound) {
     notesFoundText.setString("Notes found: " +  std::to_string(numNotesFound) + "/5");
+}
+
+void GameUI::setMonsterText(bool appearance, bool found){
+    if (appearance) {
+        monsterText.setString("Tracking");
+        monsterText.setFillColor(sf::Color::Yellow);
+    } else if (found) {
+        monsterText.setString("Found you.");
+        monsterText.setFillColor(sf::Color::Red);
+    } else if (!(appearance) && !(found)) {
+        monsterText.setString("");
+    }
 }
 
 // constructor
@@ -223,6 +241,8 @@ GameUI::GameUI() {
     drawBatteryText();
     drawLogText();
     drawNotesFoundText();
+    drawMonsterText();
+    setMonsterText(false, false);
 }
 
 void GameUI::renderUI(sf::RenderTarget& target) {
@@ -236,20 +256,29 @@ void GameUI::renderUI(sf::RenderTarget& target) {
 
     if (isMeditating)
         target.draw(statusMeditatingText);
+
     if (isHiding)
         target.draw(statusHidingText);
+
     target.draw(statusActivityLevelText);
+
     if (renderHideableText)
         target.draw(overHideableText);
+
     if (overItem)
         target.draw(overItemText);
+
     if (renderBreathBar) {
         target.draw(breathBarBottom);
         target.draw(breathBarTop);
         target.draw(breathBarText);
     }
     target.draw(batteryText);
+
     if (displayToLog)
         target.draw(logText);
+
     target.draw(notesFoundText);
+
+    target.draw(monsterText);
 }

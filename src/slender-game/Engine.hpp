@@ -59,8 +59,11 @@ private:
 
     // Notes and Monster
     int notesFound;
-    bool firstItemFound;
-    float appearanceTimer;
+    bool firstNoteFound, inAppearance, appearanceLogMessage;
+    bool playAppearanceMusic, playGhostlyWhispers;
+    float nextAppearanceTimer, appearanceHideTimer;
+    int appearanceHappensAt;
+    bool checkedInFound, inFound;
 
     // Game UI
     GameUI* UIPtr;
@@ -133,6 +136,8 @@ public:
     void updateUI();
     void updateLight();
     void updateAudio();
+
+    void updateMonster();
 
     void update();
 

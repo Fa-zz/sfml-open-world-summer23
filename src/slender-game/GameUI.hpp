@@ -24,6 +24,7 @@ private:
     sf::Text batteryText;
     sf::Text logText;
     sf::Text notesFoundText;
+    sf::Text monsterText;
 
     // Status texts
     sf::Text overHideableText;
@@ -68,6 +69,7 @@ public:
     void drawBatteryText();
     void drawLogText();
     void drawNotesFoundText();
+    void drawMonsterText();
 
     sf::Vector2f getBarCurrent(std::string bar);
 
@@ -90,6 +92,8 @@ public:
     void setLogMessage(bool display, std::string message, sf::Color color=sf::Color::White);
 
     void setNotesFound(int numNotesFound);
+
+    void setMonsterText(bool appearance, bool found);
 
     GameUI();
 

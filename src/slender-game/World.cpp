@@ -1,6 +1,7 @@
 #include "World.hpp"
 
 // Helper functions
+// RAND FUNCS NOT INCLUSIVE
 float World::randomFloat() {
     return (float)(rand()) / (float)(RAND_MAX);
 }
@@ -367,18 +368,6 @@ void World::render(sf::RenderTarget& target) {
     }
 
     // Item rendering here; below shrubs but above the rest
-    // for (auto iter = 0; iter < batteriesVector.size(); ++iter) {
-    //     target.draw(batteriesVector[iter]);
-    // }
-    // for (auto iter = 0; iter < holySymbolsVector.size(); ++iter) {
-    //     target.draw(holySymbolsVector[iter]);
-    // }
-    // for (auto iter = 0; iter < mushroomsVector.size(); ++iter) {
-    //     target.draw(mushroomsVector[iter]);
-    // }
-    // for (auto iter = 0; iter < notesVector.size(); ++iter) {
-    //     target.draw(notesVector[iter]);
-    // }
     for (auto iter = 0; iter < itemsVector.size(); ++iter) {
         target.draw(itemsVector[iter]);
     }

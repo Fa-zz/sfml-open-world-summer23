@@ -18,6 +18,10 @@ namespace DataSettings {
     inline const float lightRangeFull = 600.f;
     inline const float lightRangeOff = 200.f;
 
+    // MONSTER DATA
+    inline const int lowerBound = 10; //80
+    inline const int upperBound = 15; //100
+
     // GENERATING OBJECTS DATA
     inline const int numTrees = (900)*1;
     inline const int numFallenTrees = (50)*1;
@@ -30,13 +34,13 @@ namespace DataSettings {
     inline const int numBatteries = (20)*2;
     inline const int numHolySymbols = (20)*1;
     inline const int numMushrooms = (10)*2;
-    inline const int numNotes = 10;
+    inline const int numNotes = 5;
     inline int numTotalItems = numBatteries+numHolySymbols+numMushrooms;
 
     // MESSAGE LOG DATA
     inline const std::string useBatteryString = "Your flashlight flickers more strongly.";
     inline const std::string useHolySymbolString1 = "You feel more optimistic.";
     inline const std::string useHolySymbolString2 = "You feel healed, mentally and physically.";
-    inline const std::string outOfBoundsString = "Stay within the forest until you have found the notes";
-
+    inline const std::string outOfBoundsString = "Stay within the forest until you have found the notes.";
+    inline const std::string appearanceString = "You should hide.";
 }

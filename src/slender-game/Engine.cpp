@@ -32,6 +32,12 @@ void Engine::initVars() {
     logTimer = 0;
     totalTime = 0;
     notesFound = 0;
+    nextAppearanceTimer = appearanceHideTimer = 0;
+    inAppearance = false;
+    appearanceHappensAt = 0;
+    appearanceLogMessage = false;
+    playAppearanceMusic = playGhostlyWhispers = false;
+    inFound = checkedInFound = false;
 }
 
 void Engine::initLight() {
@@ -257,6 +263,8 @@ void Engine::updateItem() {
         } else if (itemType == "note") {
             // Check if this was the first note found
             notesFound += 1;
+            if (notesFound == 1)
+                firstNoteFound = true;
         }
 
         gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
@@ -313,8 +321,8 @@ void Engine::updateSanity(bool isMeditating) {
     std::cout << "Curr sanity: " << UIPtr->getBarCurrent("sanity").x << std::endl;
     if (!isMeditating) {
         UIPtr->setStatusMeditating(false);
-        if (sanityTimer > 6) {
-            UIPtr->setSanityBar(-3);
+        if (sanityTimer > 3) {
+            UIPtr->setSanityBar(-6);
             sanityTimer = 0;
         }
     } else {
@@ -460,7 +468,13 @@ void Engine::updatePlayer() {
 
 void Engine::updateLog() {
     if (logMessages.size()) {
-        UIPtr->setLogMessage(true, logMessages[0]);
+        sf::Color color;
+        if (logMessages[0] == DataSettings::appearanceString) {
+            color = sf::Color::Yellow;
+        } else {
+            color = sf::Color::White;
+        }
+        UIPtr->setLogMessage(true, logMessages[0], color);
         if (logTimer > 5.f) {
 
             if (logMessages[0] == DataSettings::outOfBoundsString) {
@@ -520,6 +534,88 @@ void Engine::updateAudio() {
         audioPtr->playFlashlightClick();
         clickedFlashlight = flashlightOn;
     }
+    if (playAppearanceMusic != inAppearance) {
+        audioPtr->playAppearanceMusic();
+        playAppearanceMusic = inAppearance;
+    } else if (playAppearanceMusic == inAppearance && (playGhostlyWhispers != inAppearance)) {
+        if (audioPtr->getAppearanceMusicStatus() == sf::Sound::Stopped) {
+            audioPtr->playGhostlyWhispers();
+            playGhostlyWhispers = inAppearance;
+        }
+    }
+}
+
+void Engine::updateMonster() {
+    if (!inAppearance && !inFound)
+        UIPtr->setMonsterText(false, false);
+
+    if (!(appearanceHappensAt)) {
+        int lowerBound = DataSettings::lowerBound - (10*notesFound);
+        int upperBound = DataSettings::upperBound - (10*notesFound);
+        appearanceHappensAt = gameWorldPtr->randomInt(lowerBound, upperBound);
+    }
+    std::cout << "Appearance happens at: " << appearanceHappensAt << std::endl;
+
+    if (nextAppearanceTimer > appearanceHappensAt) {
+        int appearanceChance = gameWorldPtr->randomInt(0,100);
+        if (UIPtr->getBarCurrent("sanity").x > 300 && UIPtr->getBarCurrent("sanity").x > 210) {
+            appearanceChance -= 25;
+        } else if (UIPtr->getBarCurrent("sanity").x <= 210 && UIPtr->getBarCurrent("sanity").x >= 150) {
+            appearanceChance += 50;
+        } else if (UIPtr->getBarCurrent("sanity").x <= 150) {
+            appearanceChance += 75;
+        }
+        for (int i = 0; i < notesFound; i++)
+            appearanceChance += 25;
+
+        std::cout << "APPEARANCE CHECK, appearance chance: " << appearanceChance << std::endl;
+        if (appearanceChance >= 75) {
+            inAppearance = true;
+            appearanceLogMessage = true;
+        }
+        nextAppearanceTimer = 0;
+        appearanceHappensAt = 0;
+    }
+    // } else if (!inAppearance) {
+    //     UIPtr->setMonsterText(false, false);
+    // }
+
+    if (inAppearance) {
+        if (appearanceLogMessage) {
+            logMessages.push_back(DataSettings::appearanceString);
+            appearanceLogMessage = false;
+        }
+        UIPtr->setMonsterText(true, false);
+
+        if (appearanceHideTimer > 15 && (!checkedInFound)) {
+            appearanceHideTimer = 0;
+            int foundChance = 0;
+            if (hidingActivated && hideable == 2) {
+                foundChance = gameWorldPtr->randomInt(1,5);
+                if (foundChance == 1)
+                    inFound = true;
+            } else if (hidingActivated && hideable == 1) {
+                foundChance = gameWorldPtr->randomInt(1,3);
+                if (foundChance == 1)
+                    inFound = true;
+            } else if (!hidingActivated) {
+                foundChance = gameWorldPtr->randomInt(1, 11);
+                if (foundChance > 1)
+                    inFound = true;
+            }
+            checkedInFound = true;
+        }
+    }
+
+    if ((inAppearance) && (checkedInFound) && !(audioPtr->getGhostlyWhispersStatus() == sf::Music::Playing)) {
+        inAppearance = false;
+        playAppearanceMusic = false;
+        playGhostlyWhispers = false;
+        appearanceHideTimer = 0;
+    }
+
+    // if (inFound)
+
 }
 
 void Engine::update() {
@@ -544,14 +640,26 @@ void Engine::update() {
     if (logMessages.size() > 0)
         logTimer += currentTime;
 
+    if (!(inAppearance) && !(inFound) && !(audioPtr->getGhostlyWhispersStatus() == sf::Music::Playing)) {
+        nextAppearanceTimer += currentTime;
+    } else if ((inAppearance) && (!inFound)) {
+        nextAppearanceTimer = 0;
+        appearanceHideTimer += currentTime;
+    } else if (inFound) {
+        nextAppearanceTimer = 0;
+        appearanceHideTimer = 0;
+    }
+
     updateUI();
     updateLight();
     updateItem();
     updateAudio();
+    updateMonster();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
-    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " logTimer: " << logTimer << std::endl;
+    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
     std::cout << "Player pos x: " << player.getPosition().x << " Player pos y: " << player.getPosition().y << std::endl;
+    std::cout << "inAppearance: " << inAppearance << " inFound: " << inFound << std::endl;
 }
 
 // RENDER FUNCTIONS
