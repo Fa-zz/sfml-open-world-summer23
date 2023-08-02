@@ -110,9 +110,12 @@ void Player::initVars() {
     playerMoveSpeed = DataSettings::playerMoveSpeedWalk;
     playerMovement = playerNewPosition = sf::Vector2f(0.f,0.f);
     outOfBounds = false;
-    sanity = health = 300;
-    sanityTimer = 0;
-
+    sanity = health = breath = DataSettings::barSizeDefaultX;
+    maxBar = DataSettings::barSizeDefaultX;
+    sanityTimer = breathTimer = 0;
+    flashlightOn = false;
+    leftHiding = false;
+    displayBreath = false;
 }
 
 // CONSTRUCTOR
@@ -122,8 +125,79 @@ Player::Player(World* gameWorldPtr, sf::FloatRect* gameAreaBoundsPtr):m_gameWorl
 }
 
 // UPDATE FUNCS
+void Player::updateBreathTimer(float currentTime) {
+    breathTimer += currentTime;
+}
+
 void Player::updateSanityTimer(float currentTime) {
     sanityTimer += currentTime;
+}
+
+void Player::updateBreath() {
+    if (breath < 0) {
+        breath = 0;
+    } else if (breath > 300) {
+        breath = 300;
+    }
+
+    if (statusRunning || (hidingActivated && hideable == 2) || breath < maxBar) {
+        // UIPtr->setDisplayBreathBar(true);
+        displayBreath = true;
+        isBreathing = true;
+        if (((hidingActivated && hideable == 2) || statusRunning) && breath) {
+            if (breathTimer > 1) {
+                // UIPtr->setBreathBar(-30);
+                breath -= 30;
+                breathTimer = 0;
+            }
+        } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breath)) {
+            if (breathTimer > 3) {
+                // UIPtr->setHealthBar(-12);
+                health -= 12;
+                breathTimer = 0;
+            }
+        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breath < maxBar) {
+            if (breathTimer > 4) {
+                // UIPtr->setBreathBar(12);
+                breath += 12;
+                breathTimer = 0;
+            }
+        } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breath < maxBar) {
+            if (breathTimer > 2) {
+                // UIPtr->setBreathBar(30);
+                breath += 30;
+                breathTimer = 0;
+            }
+        }
+    } else if (breath == maxBar) {
+        // isBreathing = false;
+        // UIPtr->setDisplayBreathBar(false);
+        displayBreath = false;
+    }
+}
+
+void Player::updateHiding() {
+    if (!hidingActivated) {
+        player.setFillColor(playerSkinTone);
+        if (leftHiding) {
+            flashlightOn = true;
+            leftHiding = false;
+        }
+    }
+    
+    if (hidingActivated) {
+        // UIPtr->setOverHideable(false);
+        // UIPtr->setStatusHiding(true);
+        player.setFillColor(CustomColors::invisible);
+        flashlightOn = false;
+        leftHiding = true;
+    }
+
+    if (hidingActivated) {
+        player.setFillColor(CustomColors::invisible);
+        flashlightOn = false;
+        leftHiding = true;
+    }
 }
 
 void Player::updateSanity(bool isMeditating) {
@@ -135,7 +209,6 @@ void Player::updateSanity(bool isMeditating) {
     }
 
     difference = 0;
-    std::cout << "Curr sanity (player): " << sanity << std::endl;
     if (!isMeditating) {
         if (sanityTimer > 3) {
             difference = -6;
@@ -150,13 +223,88 @@ void Player::updateSanity(bool isMeditating) {
     sanity += difference;
 }
 
+void Player::updateItem() {
+    // overItem = false;
+    // for (auto iter = 0; iter < gameWorldPtr->itemsVector.size(); ++iter) {
+    //     if (playerPtr->getPlayerGlobalBounds().intersects(gameWorldPtr->itemsVector[iter].getGlobalBounds())) {
+    //         gameWorldPtr->itemsVector[iter].setOutlineColor(sf::Color::Yellow);
+    //         gameWorldPtr->itemsVector[iter].setOutlineThickness(5.f);
+    //         highlightedIter = iter;
+    //         overItem = true;
+    //         break;
+    //     } 
+    // }
+
+    // if (highlightedIter != -1) {
+    //     if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == sf::Color::Black)
+    //         itemType = "battery";
+    //     if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::holySymbolColor)
+    //         itemType = "holy symbol";
+    //     if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::mushroomColor)
+    //         itemType = "mushroom";
+    //     if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::noteColor)
+    //         itemType = "note";
+    // }
+
+    // if (overItem && (!useItem)) {
+    //     UIPtr->setOverItem(true);
+    //     UIPtr->drawOverItemText(itemType);
+    // } else if (overItem && useItem) {
+    //     if (itemType == "battery") {
+    //         if ((flashlightBattery + 10) > 100 ) {
+    //             flashlightBattery = 100;
+    //         } else {
+    //             flashlightBattery += 10;
+    //         }
+    //         currentLightRange += 40;
+    //         flashlightBatteryTimer = 0.f;
+
+    //         logMessages.push_back(DataSettings::useBatteryString);
+    //         // gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
+    //         // useItem = false;
+
+    //     } else if (itemType == "holy symbol") {
+    //         UIPtr->setSanityBar(100.f);
+    //         int randChanceToHeal = gameWorldPtr->randomInt(1, 10);
+    //         if (randChanceToHeal > 3) {
+    //             UIPtr->setHealthBar(60.f);
+    //             logMessages.push_back(DataSettings::useHolySymbolString2);
+    //         } else {
+    //             logMessages.push_back(DataSettings::useHolySymbolString1);
+    //         }
+
+    //     } else if (itemType == "note") {
+    //         // Check if this was the first note found
+    //         notesFound += 1;
+    //         if (notesFound == 1)
+    //             firstNoteFound = true;
+    //     }
+
+    //     gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
+    //     useItem = false;
+
+    // }
+
+    // if (!(overItem)) {
+    //     UIPtr->setOverItem(false);
+    //     if (highlightedIter != -1) {
+    //         gameWorldPtr->itemsVector[highlightedIter].setOutlineThickness(0.f);
+    //         highlightedIter = -1;
+    //     }
+    // }
+}
+
 void Player::updatePlayer() {
+    std::cout << "Curr sanity (player): " << sanity << std::endl;
+    std::cout << "Curr breath (player): " << breath << std::endl;
+
     // std::cout << "Player speed modifier: " << playerSpeedModifier << " Player move speed: " << playerMoveSpeed << " Player movement x: " << playerMovement.x << " Player movement y: " << playerMovement.y << std::endl;
     statusStill = statusWalking = statusRunning = false;
     outOfBounds = false;
     playerMovement = sf::Vector2f(0,0);
 
     updateSanity(meditateActivated);
+    updateHiding();
 
     playerSpeedModifier = 1;
     if (meditateActivated || hidingActivated) {
@@ -191,6 +339,8 @@ void Player::updatePlayer() {
         statusRunning = false;
     }
 
+    updateBreath();
+
     // Checking if player collides with gameArea or other objects
     playerNewPosition = player.getPosition() + playerMovement;
     sf::CircleShape newPlayer = player;
@@ -217,10 +367,21 @@ int Player::getHideable() { return hideable; }
 std::array<bool, 3> Player::getStatus() { return {statusStill, statusWalking, statusRunning}; }
 int Player::getSanity() { return sanity; } 
 sf::CircleShape Player::getPlayer() { return player; }
+bool Player::getFlashlightOn() { return flashlightOn; }
+int Player::getBreath() { return breath; }
+bool Player::getDisplayBreath() { return displayBreath; }
+int Player::getHealth() { return health; }
 
 float Player::getSanityTimer() { return sanityTimer; }
+float Player::getBreathTimer() { return breathTimer; }
 
 // SETTERS
 void Player::setMeditateActivated(bool meditating) {
     meditateActivated = meditating;
+}
+void Player::setHidingActivated(bool hiding) {
+    hidingActivated = hiding;
+}
+void Player::setFlashlightOn(bool newFlashlight) {
+    flashlightOn = newFlashlight;
 }

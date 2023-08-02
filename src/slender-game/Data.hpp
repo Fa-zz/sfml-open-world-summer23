@@ -18,6 +18,10 @@ namespace DataSettings {
     inline const float lightRangeFull = 600.f;
     inline const float lightRangeOff = 200.f;
 
+    // UI DATA
+    inline const int barSizeDefaultX = 300;
+    inline const int barSizeDefaultY = 40;
+
     // MONSTER DATA
     inline const int lowerBound = 80; //80
     inline const int upperBound = 100; //100

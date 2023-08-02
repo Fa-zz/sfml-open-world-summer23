@@ -1,8 +1,8 @@
 #include "GameUI.hpp"
 
 void GameUI::initVars() {
-    barSizeDefaultX = 300.f;
-    barSizeDefaultY = 40.f;
+    barSizeDefaultX = DataSettings::barSizeDefaultX;
+    barSizeDefaultY = DataSettings::barSizeDefaultY;
     bool isMeditating = false;
     bool isHiding = false;
     bool overHideable = false;
@@ -158,28 +158,27 @@ void GameUI::setSanityBar(int sanity) {
         sanityBarTop.setSize(sf::Vector2f(0, barSizeDefaultY));
 }
 
-void GameUI::setBreathBar(int breathChange) {
-    if (!(breathBarTop.getSize().x + breathChange < 0) && !(breathBarTop.getSize().x + breathChange > breathBarBottom.getSize().x))
-        breathBarTop.setSize(sf::Vector2f(breathBarTop.getSize().x + breathChange, breathBarTop.getSize().y));
-    
-    if (breathBarTop.getSize().x + breathChange > breathBarBottom.getSize().x)
+void GameUI::setBreathBar(int breath) {
+    if (!(breath < 0) && !(breath > breathBarBottom.getSize().x))
+        breathBarTop.setSize(sf::Vector2f(breath, breathBarTop.getSize().y));
+
+    if (breath > breathBarBottom.getSize().x)
         breathBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
-    if (breathBarTop.getSize().x + breathChange < 0)
+    if (breath < 0)
         breathBarTop.setSize(sf::Vector2f(0, barSizeDefaultY));
 }
 
-void GameUI::setHealthBar(int healthChange) {
-    if (!(healthBarTop.getSize().x + healthChange < 0) && !(healthBarTop.getSize().x + healthChange > healthBarBottom.getSize().x))
-        healthBarTop.setSize(sf::Vector2f(healthBarTop.getSize().x + healthChange, healthBarTop.getSize().y)); 
+void GameUI::setHealthBar(int health) {
+    if (!(health < 0) && !(health > healthBarBottom.getSize().x))
+        healthBarTop.setSize(sf::Vector2f(health, healthBarTop.getSize().y));
 
-    if (healthBarTop.getSize().x + healthChange > healthBarBottom.getSize().x)
+    if (health > healthBarBottom.getSize().x)
         healthBarTop.setSize(sf::Vector2f(barSizeDefaultX, barSizeDefaultY));
-    if (healthBarTop.getSize().x + healthChange < 0)
+    if (health < 0)
         healthBarTop.setSize(sf::Vector2f(0, barSizeDefaultY));
-
 }
 
-void GameUI::setOverHideable(bool over) {
+void GameUI::setOverHideableText(bool over) {
     renderHideableText = over;
 }
 

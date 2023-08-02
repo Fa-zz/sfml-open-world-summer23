@@ -37,7 +37,7 @@ private:
     sf::Clock clock;
     float currentTime;
     // float sanityTimer;
-    float breathTimer;
+    // float breathTimer;
     float flashlightBatteryTimer;
     sf::Time getElapsed;
     float totalTime;
@@ -75,15 +75,15 @@ private:
 
     // Audio
     GameAudio* audioPtr;
-    bool clickedFlashlight;
+    bool playFlashlightSfx;
 
     // Controls
     // bool meditateActivated;
     // bool meditateButtonHeld;
-    bool flashlightOn;
-    bool hidingActivated;
-    bool isBreathing;
-    bool leftHiding;
+    // bool flashlightOn;
+    // bool hidingActivated;
+    // bool isBreathing;
+    // bool leftHiding;
     // bool statusRunning, statusWalking, statusStill;
     bool outOfBreath;
 
@@ -116,7 +116,7 @@ public:
 
     void updateViewOffset();
 
-    void updateItem();
+    // void updateItem();
 
     // void updateSanity(bool isMeditating);
     // void handleBreath();

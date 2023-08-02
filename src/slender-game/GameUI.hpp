@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 
+#include "Data.hpp"
 #include "CustomColors.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -76,7 +77,7 @@ public:
     void setSanityBar(int sanity);
     void setStatusMeditating(bool meditating);
 
-    void setOverHideable(bool over);
+    void setOverHideableText(bool over);
     void setOverItem(bool over);
     void setStatusHiding(bool hiding);
 

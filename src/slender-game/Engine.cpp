@@ -11,10 +11,9 @@ void Engine::initWindow() {
 void Engine::initVars() {
     gameAreaSize = sf::Vector2f(DataSettings::gameWorldSizeX, DataSettings::gameWorldSizeY);
     gameAreaBoundsPtr = new sf::FloatRect(sf::Vector2f(0.f,0.f), gameAreaSize);
-    leftHiding = false;
-    flashlightOn = false;
-    clickedFlashlight = flashlightOn;
-    breathTimer = 0;
+    // leftHiding = false;
+    // flashlightOn = false;
+    // clickedFlashlight = flashlightOn;
     overItem = false;
     useItem = false;
     highlightedIter = -1;
@@ -38,7 +37,6 @@ void Engine::initLight() {
     lightPtr->setRange(currentLightRange);
     lightPtr->setFade(false);
     lightPtr->setIntensity(0.5);
-
 
     float fogRenderOffset = gameAreaSize.x / 10;
     fogPtr1 = new candle::LightingArea(candle::LightingArea::FOG, sf::Vector2f(-fogRenderOffset,-fogRenderOffset), sf::Vector2f(gameAreaSize.x+(fogRenderOffset*2), gameAreaSize.y+(fogRenderOffset*2)));    
@@ -93,9 +91,6 @@ Engine::~Engine() {
     delete lightPtr;
     delete fogPtr1;
     delete playerPtr;
-    // delete fogPtr2;
-    // delete fogPtr3;
-    // delete fogPtr4;
     delete gameAreaBoundsPtr;
     delete gameWorldPtr;
     delete UIPtr;
@@ -124,14 +119,14 @@ void Engine::pollEvents() {
             window->close();
         }
         if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Num1) {
-            flashlightOn = (!flashlightOn);
+            playerPtr->setFlashlightOn(!playerPtr->getFlashlightOn());
         }
         if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::M) {
             playerPtr->setMeditateActivated((!playerPtr->getMeditateActivated()));
         }
-        // if ((overHideable) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Q) {
-        //     hidingActivated = (!hidingActivated);
-        // }
+        if ((playerPtr->getHiding()[1]) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::Q) {
+            playerPtr->setHidingActivated((!playerPtr->getHiding()[0]));
+        }
         if ((overItem) && e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::E) {
             useItem = (!useItem);
         }
@@ -146,113 +141,6 @@ void Engine::updateViewOffset() {
         viewOffset = sf::Vector2f(randomXOffset, randomYOffset);
     }
 }
-
-void Engine::updateItem() {
-    overItem = false;
-    for (auto iter = 0; iter < gameWorldPtr->itemsVector.size(); ++iter) {
-        if (playerPtr->getPlayerGlobalBounds().intersects(gameWorldPtr->itemsVector[iter].getGlobalBounds())) {
-            gameWorldPtr->itemsVector[iter].setOutlineColor(sf::Color::Yellow);
-            gameWorldPtr->itemsVector[iter].setOutlineThickness(5.f);
-            highlightedIter = iter;
-            overItem = true;
-            break;
-        } 
-    }
-
-    if (highlightedIter != -1) {
-        if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == sf::Color::Black)
-            itemType = "battery";
-        if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::holySymbolColor)
-            itemType = "holy symbol";
-        if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::mushroomColor)
-            itemType = "mushroom";
-        if (gameWorldPtr->itemsVector[highlightedIter].getFillColor() == CustomColors::noteColor)
-            itemType = "note";
-    }
-
-    if (overItem && (!useItem)) {
-        UIPtr->setOverItem(true);
-        UIPtr->drawOverItemText(itemType);
-    } else if (overItem && useItem) {
-        if (itemType == "battery") {
-            if ((flashlightBattery + 10) > 100 ) {
-                flashlightBattery = 100;
-            } else {
-                flashlightBattery += 10;
-            }
-            currentLightRange += 40;
-            flashlightBatteryTimer = 0.f;
-
-            logMessages.push_back(DataSettings::useBatteryString);
-            // gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
-            // useItem = false;
-
-        } else if (itemType == "holy symbol") {
-            UIPtr->setSanityBar(100.f);
-            int randChanceToHeal = gameWorldPtr->randomInt(1, 10);
-            if (randChanceToHeal > 3) {
-                UIPtr->setHealthBar(60.f);
-                logMessages.push_back(DataSettings::useHolySymbolString2);
-            } else {
-                logMessages.push_back(DataSettings::useHolySymbolString1);
-            }
-
-        } else if (itemType == "note") {
-            // Check if this was the first note found
-            notesFound += 1;
-            if (notesFound == 1)
-                firstNoteFound = true;
-        }
-
-        gameWorldPtr->itemsVector.erase(gameWorldPtr->itemsVector.begin() + highlightedIter);
-        useItem = false;
-
-    }
-
-    if (!(overItem)) {
-        UIPtr->setOverItem(false);
-        if (highlightedIter != -1) {
-            gameWorldPtr->itemsVector[highlightedIter].setOutlineThickness(0.f);
-            highlightedIter = -1;
-        }
-    }
-
-}
-
-// void Engine::handleBreath() {
-//     float breathCurrent = UIPtr->getBarCurrent("breath").x;
-//     float breathMax = UIPtr->getBarCurrent("breath").y;
-//     // std::cout << "breath current: " << breathCurrent << " breath max: " << breathMax << std::endl;
-
-//     if (statusRunning || (hidingActivated && hideable == 2) || breathCurrent < breathMax) {
-//         UIPtr->setDisplayBreathBar(true);
-//         isBreathing = true;
-//         if (((hidingActivated && hideable == 2) || statusRunning) && breathCurrent) {
-//             if (breathTimer > 1) {
-//                 UIPtr->setBreathBar(-30);
-//                 breathTimer = 0;
-//             }
-//         } else if (((hidingActivated && hideable == 2) || statusRunning) && (!breathCurrent)) {
-//             if (breathTimer > 3) {
-//                 UIPtr->setHealthBar(-12);
-//                 breathTimer = 0;
-//             }
-//         } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusWalking && breathCurrent < breathMax) {
-//             if (breathTimer > 4) {
-//                 UIPtr->setBreathBar(12);
-//                 breathTimer = 0;
-//             }
-//         } else if ( (!hidingActivated || (hidingActivated && hideable == 1) ) && statusStill && breathCurrent < breathMax) {
-//             if (breathTimer > 2) {
-//                 UIPtr->setBreathBar(30);
-//                 breathTimer = 0;
-//             }
-//         }
-//     } else if (breathCurrent == breathMax) {
-//         isBreathing = false;
-//         UIPtr->setDisplayBreathBar(false);
-//     }
-// }
 
 // void Engine::updateHiding(bool hidingActivated, bool overHideable, int hideable) {
 //     if (!overHideable)
@@ -328,7 +216,26 @@ void Engine::updateLog() {
 void Engine::updateUI() {
     UIPtr->setStatusMeditating(playerPtr->getMeditateActivated());
     UIPtr->setSanityBar(playerPtr->getSanity());
-    // updateSanity(playerPtr->getMeditateActivated());
+    if (!playerPtr->getHiding()[1]) {
+        UIPtr->setOverHideableText(false);
+    } else if (!(playerPtr->getHiding()[0]) && playerPtr->getHiding()[1]) {
+        UIPtr->setOverHideableText(true);
+        UIPtr->drawOverHideableText(playerPtr->getHideable());
+    }
+    if ((playerPtr->getHiding()[0])) {
+        UIPtr->setStatusHiding(true);
+    } else if (!playerPtr->getHiding()[0]) {
+        UIPtr->setStatusHiding(false);
+    }
+
+    if (playerPtr->getDisplayBreath()) {
+        UIPtr->setDisplayBreathBar(true);
+        UIPtr->setBreathBar(playerPtr->getBreath());
+    } else if (!playerPtr->getDisplayBreath()) {
+        UIPtr->setDisplayBreathBar(false);
+    }
+
+    UIPtr->setHealthBar(playerPtr->getHealth());
     // updateHiding(playerPtr->getHiding()[0], playerPtr->getHiding()[1], playerPtr->getHideable());
     // updateActivityLevel(playerPtr->getStatus()[0], playerPtr->getStatus()[1], playerPtr->getStatus()[2]);
     updateLog();
@@ -345,7 +252,7 @@ void Engine::updateLight() {
     playerMidpoint = sf::Vector2f(circlePosition.x + circleRadius, circlePosition.y + circleRadius);
     lightPtr->setPosition(playerMidpoint - sf::Vector2f(3.f,3.f));
 
-    if (!flashlightOn) {
+    if (!(playerPtr->getFlashlightOn())) {
         lightPtr->setFade(true);
         lightPtr->setRange(DataSettings::lightRangeOff);
     } else if (currentLightRange > 200.f) {
@@ -370,9 +277,9 @@ void Engine::updateLight() {
 }
 
 void Engine::updateAudio() {
-    if (clickedFlashlight != flashlightOn) {
+    if (playFlashlightSfx != playerPtr->getFlashlightOn()) {
         audioPtr->playFlashlightClick();
-        clickedFlashlight = flashlightOn;
+        playFlashlightSfx = playerPtr->getFlashlightOn();
     }
     if (playAppearanceMusic != inAppearance) {
         audioPtr->playAppearanceMusic();
@@ -473,13 +380,17 @@ void Engine::update() {
 
     playerPtr->updateSanityTimer(currentTime);
 
-    if (flashlightOn)
+    if (playerPtr->getFlashlightOn())
         flashlightBatteryTimer += currentTime;
-    if (isBreathing) {
-        breathTimer += currentTime;
-    } else {
-        breathTimer = 0;
-    }
+
+    // if (isBreathing) {
+    //     breathTimer += currentTime;
+    // } else {
+    //     breathTimer = 0;
+    // }
+    if (playerPtr->getDisplayBreath())
+        playerPtr->updateBreathTimer(currentTime);
+
     if (logMessages.size() > 0)
         logTimer += currentTime;
 
@@ -495,12 +406,12 @@ void Engine::update() {
 
     updateUI();
     updateLight();
-    updateItem();
+    // updateItem();
     updateAudio();
     // updateMonster();
     
     window->setTitle("Forest of Shapes || FPS: " + ss.str());
-    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << playerPtr->getSanityTimer() <<  std::endl;
+    std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << playerPtr->getSanityTimer() << " breathTimer: " << playerPtr->getBreathTimer() << std::endl;
     // std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " sanityTimer: " << sanityTimer << " breathTimer: " << breathTimer << " flashlightBatteryTimer: " << flashlightBatteryTimer << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
     // std::cout << "Total time: " << totalTime << " Current time: " << currentTime << " nextAppearanceTimer: " << nextAppearanceTimer << " hideTimer: " << appearanceHideTimer << std::endl;
     // std::cout << "Player pos x: " << player.getPosition().x << " Player pos y: " << player.getPosition().y << std::endl;
